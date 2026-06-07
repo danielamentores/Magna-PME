@@ -1,0 +1,45 @@
+# Ambientes Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+
+# Credenciais e segredos
+.env
+.env.local
+*.key
+credentials.json
+token.json
+client_secret*.json
+service_account*.json
+
+# Dados locais
+data/magna_export.xlsx
+data/uploads/
+data/cache/
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Testes
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+dist/
+build/
+*.egg-info/
