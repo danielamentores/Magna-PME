@@ -1,4 +1,4 @@
-# Gestform
+# Magna-PME
 
 Agente de IA para gestão administrativa e financeira de ações de formação.
 
