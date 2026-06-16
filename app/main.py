@@ -1,4 +1,4 @@
-"""Gestform - entrypoint da app Streamlit."""
+"""Magna PME - entrypoint da app Streamlit."""
 from __future__ import annotations
 
 import streamlit as st
@@ -6,8 +6,8 @@ import streamlit as st
 from core.config import get_settings
 
 st.set_page_config(
-    page_title="Gestform",
-    page_icon="🎓",
+    page_title="Magna PME",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -16,7 +16,8 @@ st.set_page_config(
 def main():
     settings = get_settings()
 
-    st.title("🎓 Gestform")
+    # st.title(" Magna PME")
+    st.image("./docs/logo_magna_pme.png", width=400)
     st.caption("Agente de IA para gestao administrativa e financeira de formacao")
 
     if "user" not in st.session_state:
@@ -55,10 +56,10 @@ def _login_simulado():
     st.info("🚧 Login simulado para desenvolvimento. OAuth Google sera adicionado a seguir.")
 
     perfis_demo = {
-        "Maria Formadora": {"nome": "Maria Formadora", "email": "maria@demo.pt", "role": "formador"},
-        "Joao Coordenador": {"nome": "Joao Coordenador", "email": "joao@demo.pt", "role": "coordenador"},
-        "Ana Gestora": {"nome": "Ana Gestora", "email": "ana@demo.pt", "role": "gestor_projeto"},
-        "Carlos Financeiro": {"nome": "Carlos Financeiro", "email": "carlos@demo.pt", "role": "financeiro"},
+        "Formadora": {"nome": "Formadora", "email": "formadora@demo.pt", "role": "formador"},
+        "Coordenador": {"nome": "Coordenador", "email": "coordenador@demo.pt", "role": "coordenador"},
+        "Gestora": {"nome": "Gestora", "email": "gestora@demo.pt", "role": "gestor_projeto"},
+        "Financeiro": {"nome": "Financeiro", "email": "financeiro@demo.pt", "role": "financeiro"},
     }
 
     col1, col2 = st.columns([1, 2])
@@ -73,7 +74,7 @@ def _login_simulado():
         st.markdown("### Sobre")
         st.markdown(
             """
-            **Gestform** — versao inicial.
+            **Magna PME** — versao inicial.
 
             **Funcionalidades nesta etapa:**
             - Estrutura de paginas por perfil
