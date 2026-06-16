@@ -16,7 +16,7 @@ Tempo estimado: **20 minutos**.
 1. Vai a https://console.cloud.google.com
 2. Topo: clica no **seletor de projeto**
 3. Clica **"Novo projeto"**
-4. Nome: `Gestform`
+4. Nome: `Magna-PME`
 5. **"Criar"** → aguarda 30s → **seleciona o projeto**
 
 ## Parte 2 — Ativar APIs (5 min)
@@ -34,7 +34,7 @@ Para cada API: **APIs e serviços → Biblioteca** → procura nome → **Ativar
 1. **APIs e serviços → Ecrã de consentimento OAuth**
 2. Tipo: **Interno** (se tens Workspace) ou **Externo**
 3. **"Criar"** → preenche:
-   - Nome da app: `Gestform`
+   - Nome da app: `Magna-PME`
    - Email de suporte: o teu
    - Email do programador: o teu
 4. **Âmbitos:** adiciona estes:
@@ -58,7 +58,7 @@ Para cada API: **APIs e serviços → Biblioteca** → procura nome → **Ativar
 
 1. Vai a https://aistudio.google.com/apikey
 2. **"Create API key"**
-3. Seleciona o projeto `Gestform`
+3. Seleciona o projeto `Magna-PME`
 4. Copia a chave (`AIza...`)
 
 ## Parte 6 — Preencher `.env` (1 min)
