@@ -8,7 +8,7 @@ Tempo estimado: **10 minutos**.
 2. **"Start your project"** → cria conta (GitHub ou email)
 3. **"New project"**
 4. Preenche:
-   - **Name:** `gestform`
+   - **Name:** `Magna-PME`
    - **Database password:** gera forte (guarda num gestor de passwords!)
    - **Region:** `West EU (Ireland)`
    - **Pricing plan:** Free
