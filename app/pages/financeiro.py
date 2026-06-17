@@ -363,10 +363,16 @@ def _card(row,tipo,idx,user_nome):
 def render_alertas(user):
     user_nome=user.get("nome") or "Financeiro"
 
-    col_f,col_o,col_d1,col_d2=st.columns([2,2,1,1])
+    col_f,col_c,col_o,col_d1,col_d2=st.columns([2,2,2,1,1])
     with col_f:
         pjs=get_projetos() if SUPABASE_OK else _MOCK_PROJETOS
         filtro=st.selectbox("Projeto",["Todos"]+[p["nome"] for p in pjs],key="fil_p")
+    with col_c:
+        try:
+            from app.financeiro_consultores import _get_cons
+            cons_lista=_get_cons()
+        except: cons_lista=[]
+        filtro_cons=st.selectbox("Consultor",["Todos"]+[c["nome"] for c in cons_lista],key="fil_cons_al")
     with col_o:
         ordem=st.selectbox("Ordenar",ORDEM,key="ord_f")
     with col_d1:
@@ -374,18 +380,22 @@ def render_alertas(user):
     with col_d2:
         d_fim=st.date_input("Até",value=None,key="d_f",format="DD/MM/YYYY")
 
+    def fil_cons_fn(dados):
+        if filtro_cons=="Todos": return dados
+        return [d for d in dados if filtro_cons in (_formador(d) or "")]
+
     if SUPABASE_OK:
         pre=get_faturas_pre_aprovacao(filtro if filtro!="Todos" else None)
-        venc=fil_datas(fil_proj(get_faturas_vencidas(),filtro),d_ini,d_fim)
-        av=fil_datas(fil_proj(get_faturas_a_vencer(),filtro),d_ini,d_fim)
+        venc=fil_datas(fil_cons_fn(fil_proj(get_faturas_vencidas(),filtro)),d_ini,d_fim)
+        av=fil_datas(fil_cons_fn(fil_proj(get_faturas_a_vencer(),filtro)),d_ini,d_fim)
         top5=get_top_formadores_pendentes()
         pp=get_pendente_por_projeto()
         cfl,cfs=get_cashflow_previsto()
         hist_bd=get_historico_financeiro()
     else:
         pre=fil_proj(st.session_state.mock_pre,filtro)
-        venc=fil_datas(fil_proj(st.session_state.mock_venc,filtro),d_ini,d_fim)
-        av=fil_datas(fil_proj(st.session_state.mock_av,filtro),d_ini,d_fim)
+        venc=fil_datas(fil_cons_fn(fil_proj(st.session_state.mock_venc,filtro)),d_ini,d_fim)
+        av=fil_datas(fil_cons_fn(fil_proj(st.session_state.mock_av,filtro)),d_ini,d_fim)
         top5=[{"formador":"João Silva","valor":5000},{"formador":"Rui Mendes","valor":4900},{"formador":"Pedro Costa","valor":3300},{"formador":"Ana Ferreira","valor":2800},{"formador":"Carla Neves","valor":2100}]
         pp=[{"projeto":"MENTORES","valor":5000},{"projeto":"PRODUTECH","valor":4400},{"projeto":"CALÇADO","valor":3300},{"projeto":"ANIET","valor":2800},{"projeto":"APIMA","valor":2300},{"projeto":"APCMC","valor":2100}]
         cfl,cfs=_MOCK_CF_L,_MOCK_CF_S
