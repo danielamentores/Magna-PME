@@ -22,7 +22,7 @@ python-dotenv==1.0.1
 pydantic[email]==2.9.2
 httpx==0.27.2
 email-validator==2.2.0
-
+plotly
 # Desenvolvimento
 pytest==8.3.3
 black==24.10.0
