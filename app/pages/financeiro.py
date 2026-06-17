@@ -114,6 +114,25 @@ BGS   = {"MENTORES":"#EEF3FD","ANIET":"#F0FDF4","APCMC":"#FFFBEB",
 # ---------------------------------------------------------------------------
 # HELPERS
 # ---------------------------------------------------------------------------
+def _notificar_rejeicao(email: str, n_fatura: str, motivo: str):
+    """Envia email de rejeição ao formador via Gmail API."""
+    if not email:
+        return
+    try:
+        from integrations.gmail import send_email
+        send_email(
+            to=email,
+            subject=f"Fatura {n_fatura} — rejeitada",
+            body=(
+                f"A sua fatura {n_fatura} foi rejeitada pelo financeiro.\n\n"
+                f"Motivo: {motivo}\n\n"
+                f"Por favor corrija e resubmeta."
+            )
+        )
+    except Exception:
+        # Gmail API não ligada ainda — só log
+        pass
+
 def _formador(r): return (r.get("profiles") or {}).get("nome") or "—"
 def _projeto(r):  return (r.get("acoes")    or {}).get("nome") or "—"
 def _email(r):    return (r.get("profiles") or {}).get("email") or ""
@@ -216,8 +235,20 @@ def init_state():
         if "mock_av"   not in st.session_state: st.session_state.mock_av=list(_MOCK_AV)
 
 def reg_hist(acao,n,form,proj,val,mot=""):
-    st.session_state.historico.append({"timestamp":datetime.now().strftime("%d/%m/%Y %H:%M"),
-        "acao":acao,"n_fatura":n,"formador":form,"projeto":proj,"valor":val,"motivo":mot})
+    entrada = {"timestamp":datetime.now().strftime("%d/%m/%Y %H:%M"),
+        "acao":acao,"n_fatura":n,"formador":form,"projeto":proj,"valor":val,"motivo":mot}
+    st.session_state.historico.append(entrada)
+    # Persistir no Supabase
+    if SUPABASE_OK:
+        try:
+            from app.db_financeiro import _log_evento
+            _log_evento(
+                tipo=f"financeiro_{acao.lower().replace(' ','_')}",
+                descricao=f"{acao} — {n} | {form} | {proj} | {eur(val)}" + (f" | Motivo: {mot}" if mot else ""),
+                dados=entrada,
+            )
+        except Exception:
+            pass  # nunca quebrar a app por causa do log
 
 # ---------------------------------------------------------------------------
 # TAB 1 — DASHBOARD
@@ -460,10 +491,14 @@ def render_alertas(user):
                     if mot:
                         if SUPABASE_OK:
                             if rejeitar_fatura(fid,mot,user_nome):
-                                reg_hist("Rejeitado",n,f,p,v,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                                reg_hist("Rejeitado",n,f,p,v,mot)
+                                _notificar_rejeicao(em,n,mot)
+                                st.toast(f"{n} rejeitada. Email enviado ao formador."); st.rerun()
                         else:
                             st.session_state.mock_pre=[x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                            reg_hist("Rejeitado",n,f,p,v,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                            reg_hist("Rejeitado",n,f,p,v,mot)
+                            _notificar_rejeicao(em,n,mot)
+                            st.toast(f"{n} rejeitada."); st.rerun()
                     else: st.warning("Escreve um motivo.")
                 st.markdown("</div>",unsafe_allow_html=True)
 
