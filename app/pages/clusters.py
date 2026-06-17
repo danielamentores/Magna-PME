@@ -310,7 +310,6 @@ def _estados_fat():
         st.session_state["fat_estado_clusters"] = dict(ESTADOS_FAT_INICIAIS)
     return st.session_state["fat_estado_clusters"]
 
-
 def _render_faturacao():
     with st.expander("Faturação", expanded=False):
         estados = _estados_fat()
@@ -326,76 +325,63 @@ def _render_faturacao():
         m2.metric("Total já recebido (pago)", _eur(total_pago))
         st.divider()
 
-        # 1. Ações fechadas a faturar
-        st.markdown("##### 1. Ações fechadas — selecionar para faturar à Mentores")
+        # 1. Ações fechadas a enviar (inclui devolvidas, para reenviar)
+        st.markdown("##### 1. Ações fechadas — selecionar para enviar à gestora")
         fechadas = acoes_em("Fechada", "Devolvida")
         if not fechadas:
-            st.caption("Sem ações fechadas por faturar.")
+            st.caption("Sem ações por enviar.")
         else:
             selecionadas = []
             for a in fechadas:
                 txt = f"{a['acao']} — {a['empresa']} — {_eur(a['valor'])}"
                 if estados[a["id"]] == "Devolvida":
-                    txt += "  ⚠️ devolvida pela gestora"
+                    txt += "  ↩️ devolvida — reenviar"
                 if st.checkbox(txt, key=f"fat_chk_{a['id']}"):
                     selecionadas.append(a)
             if st.button("📧 Enviar à gestora para confirmação", key="fat_enviar_gestora"):
                 if selecionadas:
                     for a in selecionadas:
                         estados[a["id"]] = "Em confirmação"
-                    st.success(f"{len(selecionadas)} ação(ões) enviada(s). A gestora tem 15 dias para confirmar.")
+                    st.success(f"{len(selecionadas)} ação(ões) enviada(s) à gestora (15 dias para confirmar).")
                     st.rerun()
                 else:
                     st.warning("Seleciona pelo menos uma ação.")
 
-        # 2. Em confirmação pela gestora
+        # 2. Estado das ações enviadas (só leitura — a gestora decide no perfil dela)
         em_conf = acoes_em("Em confirmação")
         if em_conf:
             st.divider()
-            st.markdown("##### 2. Em confirmação pela gestora (prazo: 15 dias)")
+            st.markdown("##### 2. A aguardar confirmação da gestora (prazo: 15 dias)")
             for a in em_conf:
-                with st.container(border=True):
-                    st.write(f"**{a['acao']}** — {a['empresa']} — {_eur(a['valor'])}")
-                    g1, g2 = st.columns(2)
-                    if g1.button("✅ Gestora confirma", key=f"fat_ok_{a['id']}"):
-                        estados[a["id"]] = "Confirmada"
-                        st.rerun()
-                    if g2.button("↩️ Gestora devolve", key=f"fat_dev_{a['id']}"):
-                        estados[a["id"]] = "Devolvida"
-                        st.rerun()
+                st.write(f"⏳ {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
 
-        # 3. Confirmadas -> nota de honorários
-        confirmadas = acoes_em("Confirmada")
-        if confirmadas:
+        devolvidas = acoes_em("Devolvida")
+        if devolvidas:
             st.divider()
-            st.markdown("##### 3. Nota de honorários para o consultor")
-            for a in confirmadas:
-                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
-            st.metric("Total da nota de honorários", _eur(sum(a["valor"] for a in confirmadas)))
-            if st.button("📤 Enviar nota de honorários ao consultor", key="fat_enviar_consultor"):
-                for a in confirmadas:
-                    estados[a["id"]] = "Aguarda fatura"
-                st.success("Nota de honorários enviada ao consultor.")
-                st.rerun()
+            st.markdown("##### Ações devolvidas pela gestora")
+            for a in devolvidas:
+                st.write(f"↩️ {a['acao']} — {a['empresa']} — {_eur(a['valor'])} — corrige e reenvia acima")
 
-        # 4. Consultor submete fatura
-        aguarda = acoes_em("Aguarda fatura")
-        if aguarda:
+        # 3. Aceites -> nota recebida por email -> carregar fatura para o financeiro
+        aceites = acoes_em("Aceite")
+        if aceites:
             st.divider()
-            st.markdown("##### 4. Fatura do consultor")
-            for a in aguarda:
-                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
-            ficheiro = st.file_uploader("Carregar fatura destas ações", type=["pdf"], key="fat_upload")
-            if st.button("Submeter fatura", key="fat_submeter"):
+            st.markdown("##### 3. Aceites pela gestora — nota de honorários recebida por email")
+            for a in aceites:
+                st.write(f"✅ {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
+            st.metric("Valor da nota a faturar ao financeiro", _eur(sum(a["valor"] for a in aceites)))
+            st.caption("Carrega a fatura com este valor para o financeiro.")
+            ficheiro = st.file_uploader("Fatura para o financeiro", type=["pdf"], key="fat_upload")
+            if st.button("Submeter fatura ao financeiro", key="fat_submeter"):
                 if ficheiro is not None:
-                    for a in aguarda:
+                    for a in aceites:
                         estados[a["id"]] = "Faturada"
-                    st.success("Fatura submetida. Aguarda pagamento do financeiro.")
+                    st.success("Fatura submetida ao financeiro. Aguarda pagamento.")
                     st.rerun()
                 else:
                     st.warning("Carrega o ficheiro da fatura primeiro.")
 
-        # 5. Já faturadas / pagas
+        # 4. Já faturadas / pagas
         st.divider()
         st.markdown("##### Ações já faturadas e pagas")
         fp = acoes_em("Faturada", "Paga")
@@ -404,4 +390,4 @@ def _render_faturacao():
         else:
             for a in fp:
                 icone = "💶 Paga" if estados[a["id"]] == "Paga" else "🧾 Faturada (aguarda pagamento)"
-                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])} — {icone}")
+                st.write(f"{a['acao']} — {a['empresa']} — {_eur(a['valor'])} — {icone}")
