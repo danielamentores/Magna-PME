@@ -31,7 +31,15 @@ ACOES_FORMADOR = {
         {"acao": "Ação 1 - Dados", "fechada_magna": True, "faturou": False, "fatura": None, "paga": False},
     ],
 }
+# --- Faturação (exemplo) ---
+ACOES_FATURACAO = [
+    {"id": "f1", "acao": "Ação 1 - Cibersegurança",   "empresa": "Empresa Alfa, Lda", "valor": 3000.0},
+    {"id": "f2", "acao": "Ação 2 - Cloud",            "empresa": "Empresa Alfa, Lda", "valor": 2100.0},
+    {"id": "f3", "acao": "Ação 3 - Marketing Digital", "empresa": "Beta Serviços, SA", "valor": 4000.0},
+    {"id": "f4", "acao": "Ação 4 - Dados",            "empresa": "Gama Comércio, Lda", "valor": 1800.0},
+]
 
+ESTADOS_FAT_INICIAIS = {"f1": "Paga", "f2": "Faturada", "f3": "Fechada", "f4": "Fechada"}
 
 def render():
     _render_execucao()
@@ -163,8 +171,7 @@ def render():
     _render_execucao()
     _render_formadores()
     _render_empresas()
-    st.info("Faturação")
-
+    _render_faturacao()
 
 def _render_execucao():
     with st.expander("Execução", expanded=True):
@@ -298,3 +305,103 @@ def _render_empresas():
         t1, t2 = st.columns(2)
         t1.metric("Total COMPETE (empresa recebe)", _eur(total_compete))
         t2.metric("Total a faturar Mentores", _eur(total_mentores))
+def _estados_fat():
+    if "fat_estado_clusters" not in st.session_state:
+        st.session_state["fat_estado_clusters"] = dict(ESTADOS_FAT_INICIAIS)
+    return st.session_state["fat_estado_clusters"]
+
+
+def _render_faturacao():
+    with st.expander("Faturação", expanded=False):
+        estados = _estados_fat()
+
+        def acoes_em(*ests):
+            return [a for a in ACOES_FATURACAO if estados.get(a["id"]) in ests]
+
+        # Totais
+        total_faturado = sum(a["valor"] for a in acoes_em("Faturada", "Paga"))
+        total_pago = sum(a["valor"] for a in acoes_em("Paga"))
+        m1, m2 = st.columns(2)
+        m1.metric("Total já faturado", _eur(total_faturado))
+        m2.metric("Total já recebido (pago)", _eur(total_pago))
+        st.divider()
+
+        # 1. Ações fechadas a faturar
+        st.markdown("##### 1. Ações fechadas — selecionar para faturar à Mentores")
+        fechadas = acoes_em("Fechada", "Devolvida")
+        if not fechadas:
+            st.caption("Sem ações fechadas por faturar.")
+        else:
+            selecionadas = []
+            for a in fechadas:
+                txt = f"{a['acao']} — {a['empresa']} — {_eur(a['valor'])}"
+                if estados[a["id"]] == "Devolvida":
+                    txt += "  ⚠️ devolvida pela gestora"
+                if st.checkbox(txt, key=f"fat_chk_{a['id']}"):
+                    selecionadas.append(a)
+            if st.button("📧 Enviar à gestora para confirmação", key="fat_enviar_gestora"):
+                if selecionadas:
+                    for a in selecionadas:
+                        estados[a["id"]] = "Em confirmação"
+                    st.success(f"{len(selecionadas)} ação(ões) enviada(s). A gestora tem 15 dias para confirmar.")
+                    st.rerun()
+                else:
+                    st.warning("Seleciona pelo menos uma ação.")
+
+        # 2. Em confirmação pela gestora
+        em_conf = acoes_em("Em confirmação")
+        if em_conf:
+            st.divider()
+            st.markdown("##### 2. Em confirmação pela gestora (prazo: 15 dias)")
+            for a in em_conf:
+                with st.container(border=True):
+                    st.write(f"**{a['acao']}** — {a['empresa']} — {_eur(a['valor'])}")
+                    g1, g2 = st.columns(2)
+                    if g1.button("✅ Gestora confirma", key=f"fat_ok_{a['id']}"):
+                        estados[a["id"]] = "Confirmada"
+                        st.rerun()
+                    if g2.button("↩️ Gestora devolve", key=f"fat_dev_{a['id']}"):
+                        estados[a["id"]] = "Devolvida"
+                        st.rerun()
+
+        # 3. Confirmadas -> nota de honorários
+        confirmadas = acoes_em("Confirmada")
+        if confirmadas:
+            st.divider()
+            st.markdown("##### 3. Nota de honorários para o consultor")
+            for a in confirmadas:
+                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
+            st.metric("Total da nota de honorários", _eur(sum(a["valor"] for a in confirmadas)))
+            if st.button("📤 Enviar nota de honorários ao consultor", key="fat_enviar_consultor"):
+                for a in confirmadas:
+                    estados[a["id"]] = "Aguarda fatura"
+                st.success("Nota de honorários enviada ao consultor.")
+                st.rerun()
+
+        # 4. Consultor submete fatura
+        aguarda = acoes_em("Aguarda fatura")
+        if aguarda:
+            st.divider()
+            st.markdown("##### 4. Fatura do consultor")
+            for a in aguarda:
+                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
+            ficheiro = st.file_uploader("Carregar fatura destas ações", type=["pdf"], key="fat_upload")
+            if st.button("Submeter fatura", key="fat_submeter"):
+                if ficheiro is not None:
+                    for a in aguarda:
+                        estados[a["id"]] = "Faturada"
+                    st.success("Fatura submetida. Aguarda pagamento do financeiro.")
+                    st.rerun()
+                else:
+                    st.warning("Carrega o ficheiro da fatura primeiro.")
+
+        # 5. Já faturadas / pagas
+        st.divider()
+        st.markdown("##### Ações já faturadas e pagas")
+        fp = acoes_em("Faturada", "Paga")
+        if not fp:
+            st.caption("Ainda sem ações faturadas.")
+        else:
+            for a in fp:
+                icone = "💶 Paga" if estados[a["id"]] == "Paga" else "🧾 Faturada (aguarda pagamento)"
+                st.write(f"- {a['acao']} — {a['empresa']} — {_eur(a['valor'])} — {icone}")
