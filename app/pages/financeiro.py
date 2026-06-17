@@ -27,14 +27,13 @@ CORES_PROJETO = {
 }
 
 FATURAS_RECENTES = pd.DataFrame([
-    {"descricao": "Formação Excel Avançado", "projeto": "MENTORES",  "formador": "João Silva",    "n_fatura": "FT2026/0142", "valor": 3200,  "estado": "Pendente"},
-    {"descricao": "Consultoria RH",          "projeto": "ANIET",     "formador": "Ana Ferreira",  "n_fatura": "FT2026/0138", "valor": 8500,  "estado": "Aprovado"},
-    {"descricao": "Formação Liderança",      "projeto": "PRODUTECH", "formador": "Rui Mendes",    "n_fatura": "FT2026/0131", "valor": 12000, "estado": "Pago"},
-    {"descricao": "Material Didático",       "projeto": "APCMC",     "formador": "Carla Neves",   "n_fatura": "FT2026/0129", "valor": 2100,  "estado": "Aprovado"},
-    {"descricao": "Formação Compliance",     "projeto": "CALÇADO",   "formador": "Pedro Costa",   "n_fatura": "FT2026/0125", "valor": 5800,  "estado": "Pendente"},
+    {"descricao": "Formação Excel Avançado",       "projeto": "MENTORES",  "formador": "João Silva",      "n_fatura": "FT2026/0142", "valor": 3200,  "estado": "Pendente"},
+    {"descricao": "Formação Gestão de Equipas",    "projeto": "ANIET",     "formador": "Ana Ferreira",    "n_fatura": "FT2026/0138", "valor": 2800,  "estado": "Aprovado"},
+    {"descricao": "Formação Liderança",             "projeto": "PRODUTECH", "formador": "Rui Mendes",      "n_fatura": "FT2026/0131", "valor": 4100,  "estado": "Pago"},
+    {"descricao": "Formação Comunicação",           "projeto": "APCMC",     "formador": "Carla Neves",     "n_fatura": "FT2026/0129", "valor": 2100,  "estado": "Aprovado"},
+    {"descricao": "Formação Segurança no Trabalho", "projeto": "CALÇADO",   "formador": "Pedro Costa",     "n_fatura": "FT2026/0125", "valor": 1900,  "estado": "Pendente"},
 ])
 
-# Faturas para aprovação manual (validação automática falhou)
 FATURAS_PRE_APROVACAO = pd.DataFrame([
     {
         "n_fatura": "FT2026/0155",
@@ -50,7 +49,7 @@ FATURAS_PRE_APROVACAO = pd.DataFrame([
         "formador": "Sofia Rodrigues",
         "cod_interno": "FM-2026-0038",
         "projeto": "ANIET",
-        "valor": 3100,
+        "valor": 1950,
         "motivo_falha": "Nome do formador não corresponde ao projeto",
         "data_submissao": date(2026, 6, 14),
     },
@@ -75,34 +74,34 @@ DESPESA_PROJETO = pd.DataFrame([
 ])
 
 FATURAS_VENCIDAS = pd.DataFrame([
-    {"n_fatura": "FT2026/0110", "descricao": "Formação Segurança",    "projeto": "MENTORES",  "formador": "João Silva",   "valor": 4800, "emissao": date(2026, 5, 2),  "vencimento": date(2026, 6, 2),  "atraso": 14},
-    {"n_fatura": "FT2026/0108", "descricao": "Consultoria Processos", "projeto": "PRODUTECH", "formador": "Rui Mendes",   "valor": 6200, "emissao": date(2026, 5, 8),  "vencimento": date(2026, 6, 8),  "atraso": 8},
-    {"n_fatura": "FT2026/0105", "descricao": "Material Formativo",    "projeto": "CALÇADO",   "formador": "Pedro Costa",  "valor": 3600, "emissao": date(2026, 5, 12), "vencimento": date(2026, 6, 12), "atraso": 4},
+    {"n_fatura": "FT2026/0110", "descricao": "Formação Segurança",          "projeto": "MENTORES",  "formador": "João Silva",   "valor": 1800, "emissao": date(2026, 5, 2),  "vencimento": date(2026, 6, 2),  "atraso": 14},
+    {"n_fatura": "FT2026/0108", "descricao": "Formação Lean Manufacturing", "projeto": "PRODUTECH", "formador": "Rui Mendes",   "valor": 2600, "emissao": date(2026, 5, 8),  "vencimento": date(2026, 6, 8),  "atraso": 8},
+    {"n_fatura": "FT2026/0105", "descricao": "Formação Qualidade",          "projeto": "CALÇADO",   "formador": "Pedro Costa",  "valor": 1400, "emissao": date(2026, 5, 12), "vencimento": date(2026, 6, 12), "atraso": 4},
 ])
 
 FATURAS_A_VENCER = pd.DataFrame([
-    {"n_fatura": "FT2026/0142", "descricao": "Formação Excel Avançado", "projeto": "MENTORES", "formador": "João Silva",   "valor": 3200, "emissao": date(2026, 6, 1),  "vencimento": date(2026, 6, 21), "dias": 5},
-    {"n_fatura": "FT2026/0138", "descricao": "Consultoria RH",          "projeto": "ANIET",    "formador": "Ana Ferreira", "valor": 8500, "emissao": date(2026, 6, 3),  "vencimento": date(2026, 6, 27), "dias": 11},
-    {"n_fatura": "FT2026/0136", "descricao": "Formação Compliance",     "projeto": "CALÇADO",  "formador": "Pedro Costa",  "valor": 5800, "emissao": date(2026, 6, 5),  "vencimento": date(2026, 7, 4),  "dias": 18},
-    {"n_fatura": "FT2026/0129", "descricao": "Material Didático",       "projeto": "APCMC",    "formador": "Carla Neves",  "valor": 2100, "emissao": date(2026, 6, 6),  "vencimento": date(2026, 7, 10), "dias": 24},
-    {"n_fatura": "FT2026/0127", "descricao": "Formação Liderança",      "projeto": "APIMA",    "formador": "Rui Mendes",   "valor": 4900, "emissao": date(2026, 6, 8),  "vencimento": date(2026, 7, 16), "dias": 30},
+    {"n_fatura": "FT2026/0142", "descricao": "Formação Excel Avançado",       "projeto": "MENTORES", "formador": "João Silva",   "valor": 3200, "emissao": date(2026, 6, 1),  "vencimento": date(2026, 6, 21), "dias": 5},
+    {"n_fatura": "FT2026/0138", "descricao": "Formação Gestão de Equipas",    "projeto": "ANIET",    "formador": "Ana Ferreira", "valor": 2800, "emissao": date(2026, 6, 3),  "vencimento": date(2026, 6, 27), "dias": 11},
+    {"n_fatura": "FT2026/0136", "descricao": "Formação Segurança no Trabalho","projeto": "CALÇADO",  "formador": "Pedro Costa",  "valor": 1900, "emissao": date(2026, 6, 5),  "vencimento": date(2026, 7, 4),  "dias": 18},
+    {"n_fatura": "FT2026/0129", "descricao": "Formação Comunicação",          "projeto": "APCMC",    "formador": "Carla Neves",  "valor": 2100, "emissao": date(2026, 6, 6),  "vencimento": date(2026, 7, 10), "dias": 24},
+    {"n_fatura": "FT2026/0127", "descricao": "Formação Liderança",            "projeto": "APIMA",    "formador": "Rui Mendes",   "valor": 2300, "emissao": date(2026, 6, 8),  "vencimento": date(2026, 7, 16), "dias": 30},
 ])
 
 TOP5_FORMADORES = pd.DataFrame([
-    {"formador": "Ana Ferreira", "valor": 8500},
-    {"formador": "João Silva",   "valor": 8000},
-    {"formador": "Pedro Costa",  "valor": 5800},
-    {"formador": "Carla Neves",  "valor": 5700},
-    {"formador": "Rui Mendes",   "valor": 6200},
+    {"formador": "João Silva",   "valor": 5000},
+    {"formador": "Ana Ferreira", "valor": 2800},
+    {"formador": "Rui Mendes",   "valor": 4900},
+    {"formador": "Carla Neves",  "valor": 2100},
+    {"formador": "Pedro Costa",  "valor": 3300},
 ]).sort_values("valor", ascending=False).reset_index(drop=True)
 
 PENDENTE_PROJETO = pd.DataFrame([
-    {"projeto": "MENTORES",  "valor": 8000},
-    {"projeto": "PRODUTECH", "valor": 6200},
-    {"projeto": "ANIET",     "valor": 8500},
-    {"projeto": "CALÇADO",   "valor": 9400},
+    {"projeto": "MENTORES",  "valor": 5000},
+    {"projeto": "PRODUTECH", "valor": 4400},
+    {"projeto": "ANIET",     "valor": 2800},
+    {"projeto": "CALÇADO",   "valor": 3300},
     {"projeto": "APCMC",     "valor": 2100},
-    {"projeto": "APIMA",     "valor": 4900},
+    {"projeto": "APIMA",     "valor": 2300},
 ])
 
 CASHFLOW_SEMANAS = [
@@ -110,7 +109,9 @@ CASHFLOW_SEMANAS = [
     "S1 Jul", "S2 Jul", "S3 Jul", "S4 Jul",
     "S1 Ago", "S2 Ago", "S3 Ago", "S4 Ago", "S1 Set",
 ]
-CASHFLOW_SAIDAS = [8200, 5400, 9800, 7800, 6200, 8400, 5800, 8000, 4200, 7600, 3800, 4000, 5200]
+CASHFLOW_SAIDAS = [3200, 2100, 4100, 2800, 2600, 3800, 1900, 3200, 2400, 2800, 1800, 2100, 2300]
+
+PLOTLY_CONFIG = {"displayModeBar": False}
 
 
 # ---------------------------------------------------------------------------
@@ -118,24 +119,23 @@ CASHFLOW_SAIDAS = [8200, 5400, 9800, 7800, 6200, 8400, 5800, 8000, 4200, 7600, 3
 # ---------------------------------------------------------------------------
 
 ESTADO_BADGE = {
-    "Pendente": ("🟡", "#FEF3C7", "#92400E"),
-    "Aprovado": ("🟢", "#D1FAE5", "#065F46"),
-    "Pago":     ("🔵", "#DBEAFE", "#1E40AF"),
-    "Vencido":  ("🔴", "#FEE2E2", "#991B1B"),
+    "Pendente": ("#FEF3C7", "#92400E"),
+    "Aprovado": ("#D1FAE5", "#065F46"),
+    "Pago":     ("#DBEAFE", "#1E40AF"),
+    "Vencido":  ("#FEE2E2", "#991B1B"),
 }
 
 def fmt_eur(valor: float) -> str:
     return f"€ {valor:,.0f}".replace(",", ".")
 
 def badge_html(estado: str) -> str:
-    icon, bg, color = ESTADO_BADGE.get(estado, ("⚪", "#F3F4F6", "#374151"))
+    bg, color = ESTADO_BADGE.get(estado, ("#F3F4F6", "#374151"))
     return (
         f"<span style='background:{bg};color:{color};padding:2px 10px;"
-        f"border-radius:12px;font-size:12px;font-weight:500'>{icon} {estado}</span>"
+        f"border-radius:12px;font-size:12px;font-weight:500'>{estado}</span>"
     )
 
 def card_fatura(row, tipo: str, idx: int):
-    """Renderiza uma linha de fatura com design consistente."""
     with st.container(border=True):
         col_info, col_valor, col_acao = st.columns([5, 2, 2])
 
@@ -149,7 +149,6 @@ def card_fatura(row, tipo: str, idx: int):
                 f"Vencimento {row['vencimento'].strftime('%d/%m/%Y')}</span>",
                 unsafe_allow_html=True,
             )
-
         with col_valor:
             if tipo == "vencida":
                 st.markdown(
@@ -163,12 +162,9 @@ def card_fatura(row, tipo: str, idx: int):
                     f"<span style='color:#D97706;font-size:13px'>vence em {row['dias']} dias</span></div>",
                     unsafe_allow_html=True,
                 )
-
         with col_acao:
-            st.markdown("<div style='margin-top:6px'>", unsafe_allow_html=True)
             if st.button("✓ Marcar pago", key=f"pago_{tipo}_{idx}", use_container_width=True):
                 st.toast(f"Fatura {row['n_fatura']} marcada como paga. (A ligar à BD)")
-            st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -176,28 +172,19 @@ def card_fatura(row, tipo: str, idx: int):
 # ---------------------------------------------------------------------------
 
 def render_dashboard():
-    n_pre_aprovacao = len(FATURAS_PRE_APROVACAO)
+    n_pre = len(FATURAS_PRE_APROVACAO)
 
-    # Alerta de pré-aprovação pendente
-    if n_pre_aprovacao > 0:
-        st.warning(
-            f"⚠️ **{n_pre_aprovacao} fatura(s) aguardam aprovação manual** — "
-            f"validação automática falhou. Ver em **Alertas/A Pagar**.",
-            icon=None,
-        )
+    if n_pre > 0:
+        st.warning(f"⚠️ **{n_pre} fatura(s) aguardam aprovação manual** — validação automática falhou. Ver em **Alertas/A Pagar**.")
 
-    st.markdown("---")
-
-    # Métricas de topo
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("⏳ Pré-aprovação",    fmt_eur(int(FATURAS_PRE_APROVACAO["valor"].sum())), f"{n_pre_aprovacao} faturas")
+    c1.metric("🔍 Pré-aprovação",    fmt_eur(int(FATURAS_PRE_APROVACAO["valor"].sum())), f"{n_pre} faturas")
     c2.metric("✅ Aprovado a pagar", fmt_eur(83150), "8 faturas")
     c3.metric("💳 Pago este mês",    fmt_eur(121400), "23 faturas")
-    c4.metric("🚨 Vencido",          fmt_eur(14600),  "3 faturas")
+    c4.metric("🚨 Vencido",          fmt_eur(int(FATURAS_VENCIDAS["valor"].sum())), f"{len(FATURAS_VENCIDAS)} faturas")
 
     st.markdown("---")
 
-    # Faturas recentes + donut
     col_left, col_right = st.columns([3, 2])
 
     with col_left:
@@ -224,13 +211,14 @@ def render_dashboard():
             showlegend=False,
         ))
         fig_donut.update_layout(margin=dict(t=0, b=0, l=0, r=0), height=300)
-        st.plotly_chart(fig_donut, use_container_width=True)
+        st.plotly_chart(fig_donut, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.markdown("---")
 
-    # Despesa por projeto
     st.subheader("Despesa por projeto")
     df_sorted = DESPESA_PROJETO.sort_values("valor", ascending=True)
+    max_val = df_sorted["valor"].max()
+
     fig_bar = go.Figure(go.Bar(
         x=df_sorted["valor"],
         y=df_sorted["projeto"],
@@ -240,14 +228,14 @@ def render_dashboard():
         textposition="outside",
     ))
     fig_bar.update_layout(
-        margin=dict(t=0, b=0, l=0, r=100),
-        height=280,
-        xaxis=dict(showticklabels=False, showgrid=False),
+        margin=dict(t=10, b=10, l=10, r=120),
+        height=300,
+        xaxis=dict(showticklabels=False, showgrid=False, range=[0, max_val * 1.25]),
         yaxis=dict(showgrid=False),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, use_container_width=True, config=PLOTLY_CONFIG)
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +248,6 @@ def render_alertas():
     total_pendente = total_vencido + total_a_vencer
     n_pre          = len(FATURAS_PRE_APROVACAO)
 
-    # Métricas
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("🚨 Vencido",        fmt_eur(total_vencido),  f"{len(FATURAS_VENCIDAS)} faturas")
     c2.metric("⏳ A vencer 30d",   fmt_eur(total_a_vencer), f"{len(FATURAS_A_VENCER)} faturas")
@@ -269,9 +256,9 @@ def render_alertas():
 
     st.markdown("---")
 
-    # ---- PRÉ-APROVAÇÃO MANUAL ----
+    # Aprovação manual
     st.subheader(f"🔍 Aprovação manual ({n_pre} pendentes)")
-    st.caption("Faturas submetidas pelos formadores cuja validação automática falhou.")
+    st.caption("Faturas submetidas por formadores cuja validação automática falhou.")
 
     if FATURAS_PRE_APROVACAO.empty:
         st.success("Nenhuma fatura pendente de aprovação manual.")
@@ -279,7 +266,6 @@ def render_alertas():
         for i, row in FATURAS_PRE_APROVACAO.iterrows():
             with st.container(border=True):
                 col_info, col_acao = st.columns([5, 3])
-
                 with col_info:
                     st.markdown(
                         f"**Nº Fatura:** {row['n_fatura']}&nbsp;&nbsp;"
@@ -291,15 +277,13 @@ def render_alertas():
                         f"<span style='color:#9CA3AF;font-size:12px'>Submetida a {row['data_submissao'].strftime('%d/%m/%Y')}</span>",
                         unsafe_allow_html=True,
                     )
-
                 with col_acao:
-                    st.markdown("<div style='margin-top:4px'>", unsafe_allow_html=True)
                     if st.button("✅ Aprovar", key=f"apr_{i}", use_container_width=True):
                         st.toast(f"Fatura {row['n_fatura']} aprovada. (A ligar à BD)")
                     motivo = st.text_input(
-                        "Motivo de rejeição",
+                        "Motivo",
                         key=f"motivo_{i}",
-                        placeholder="Descreve o motivo...",
+                        placeholder="Motivo de rejeição...",
                         label_visibility="collapsed",
                     )
                     if st.button("❌ Rejeitar", key=f"rej_{i}", use_container_width=True):
@@ -307,11 +291,9 @@ def render_alertas():
                             st.toast(f"Fatura {row['n_fatura']} rejeitada. Notificação enviada ao formador. (A ligar à BD)")
                         else:
                             st.warning("Escreve um motivo antes de rejeitar.")
-                    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # Filtro por projeto
     nomes_projeto = ["Todos"] + [p["nome"] for p in PROJETOS]
     filtro = st.selectbox("Filtrar por projeto", nomes_projeto, index=0)
 
@@ -323,7 +305,6 @@ def render_alertas():
     fv = aplicar_filtro(FATURAS_VENCIDAS)
     fa = aplicar_filtro(FATURAS_A_VENCER)
 
-    # ---- VENCIDAS ----
     st.subheader("🔴 Faturas vencidas")
     if fv.empty:
         st.info("Nenhuma fatura vencida para este projeto.")
@@ -334,7 +315,6 @@ def render_alertas():
 
     st.markdown("---")
 
-    # ---- A VENCER ----
     st.subheader("🟡 A vencer — próximos 30 dias")
     if fa.empty:
         st.info("Nenhuma fatura a vencer para este projeto.")
@@ -345,7 +325,6 @@ def render_alertas():
 
     st.markdown("---")
 
-    # Top 5 + por projeto
     col_l, col_r = st.columns(2)
 
     with col_l:
@@ -370,7 +349,6 @@ def render_alertas():
 
     st.markdown("---")
 
-    # Cashflow 90 dias
     st.subheader("Cashflow previsto — próximos 90 dias")
     acumulado = []
     total = 0
@@ -395,16 +373,16 @@ def render_alertas():
         yaxis="y2",
     ))
     fig_cf.update_layout(
-        height=320,
-        margin=dict(t=10, b=0, l=0, r=0),
+        height=350,
+        margin=dict(t=30, b=60, l=60, r=60),
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         yaxis=dict(title="Saída semanal (€)", showgrid=False),
         yaxis2=dict(title="Acumulado (€)", overlaying="y", side="right", showgrid=False),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(tickangle=45),
+        xaxis=dict(tickangle=45, automargin=True),
     )
-    st.plotly_chart(fig_cf, use_container_width=True)
+    st.plotly_chart(fig_cf, use_container_width=True, config=PLOTLY_CONFIG)
 
 
 # ---------------------------------------------------------------------------
