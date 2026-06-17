@@ -2,7 +2,7 @@
 import streamlit as st
 
 # Dados de exemplo (so para a fase visual — trocar pela BD depois)
-PROJETOS = ["Projeto A", "Projeto B", "Projeto C"]
+PROJETOS = ["APCMC", "ANIET", "Mentores"]
 ACOES_EXEMPLO = [
     {"Acao": "Acao 1", "Estado": "Fechada",  "Execucao (%)": 100},
     {"Acao": "Acao 2", "Estado": "Em curso", "Execucao (%)": 65},
