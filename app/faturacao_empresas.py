@@ -247,7 +247,7 @@ def render_faturacao_empresas(user: dict):
     st.html(div())
 
     # ---- FILTROS ----
-    col_f, col_e, col_p = st.columns([2, 2, 2])
+    col_f, col_e, col_p, col_d1, col_d2 = st.columns([2, 2, 2, 1, 1])
     with col_f:
         filtro_est  = st.selectbox("Estado", ["Todos","Por faturar","Fatura emitida","Pago"],
                                    key="fe_est",
@@ -256,7 +256,11 @@ def render_faturacao_empresas(user: dict):
     with col_e:
         filtro_proj = st.selectbox("Projeto", ["Todos","MENTORES","ANIET","APCMC","APIMA","PRODUTECH","CALÇADO"], key="fe_proj")
     with col_p:
-        pesquisa    = st.text_input("Pesquisar empresa / código", key="fe_pesq", placeholder="Ex: Fenabel, LIKE GARDEN...")
+        pesquisa    = st.text_input("Pesquisar empresa / código", key="fe_pesq", placeholder="Ex: Fenabel...")
+    with col_d1:
+        d_ini = st.date_input("De", value=None, key="fe_d_ini", format="DD/MM/YYYY")
+    with col_d2:
+        d_fim = st.date_input("Até", value=None, key="fe_d_fim", format="DD/MM/YYYY")
 
     est_map = {"Por faturar":"por_faturar","Fatura emitida":"fatura_emitida","Pago":"pago","Todos":"Todos"}
     fat_list = get_fe(est_map.get(filtro_est,"Todos"), filtro_proj)
@@ -264,6 +268,23 @@ def render_faturacao_empresas(user: dict):
     if pesquisa:
         p = pesquisa.lower()
         fat_list = [x for x in fat_list if p in (x.get("empresa") or "").lower() or p in (x.get("codigo") or "").lower()]
+
+    # Filtro por datas (data_fatura para emitidas/pagas, ou data_pagamento para pagas)
+    if d_ini or d_fim:
+        def _dentro_datas(row):
+            from datetime import date as _date
+            for campo in ["data_fatura","data_pagamento"]:
+                ds = row.get(campo)
+                if not ds: continue
+                try:
+                    d = _date.fromisoformat(str(ds)[:10])
+                    if d_ini and d < d_ini: continue
+                    if d_fim and d > d_fim: continue
+                    return True
+                except: continue
+            # se não tem data mas filtro está ativo, só mostrar se for por_faturar
+            return row.get("estado") == "por_faturar" and not d_ini and not d_fim
+        fat_list = [x for x in fat_list if _dentro_datas(x)]
 
     st.html(div())
 
