@@ -169,21 +169,27 @@ def _get_acoes_faturar():
     except: return []
 
 def _get_fat_empresas(filtro_estado=None, filtro_proj=None):
-    if not SUPABASE_OK:
-        d = list(_MOCK_FAT_EMPRESAS)
+    def _filtrar(d):
         if filtro_estado and filtro_estado != "Todos": d = [x for x in d if x["estado"]==filtro_estado]
         if filtro_proj and filtro_proj != "Todos":     d = [x for x in d if x.get("projeto")==filtro_proj]
         return d
+
+    if not SUPABASE_OK:
+        return _filtrar(list(_MOCK_FAT_EMPRESAS))
     try:
         q = get_supabase().table("faturacao_empresas").select(
             "id,acao_id,empresa,nif_empresa,dimensao,volume,formandos_desf,formandos_nao_desf,"
             "valor_30pct,estado,numero_fatura,data_fatura,data_pagamento,valor_recebido,notas,"
-            "acoes(codigo,nome,magnitude_id)"
+            "acoes(codigo,nome)"
         ).order("created_at", desc=True)
         if filtro_estado and filtro_estado != "Todos": q = q.eq("estado", filtro_estado)
         r = q.execute()
-        return r.data
-    except: return []
+        # Se BD vazia, usa mock data
+        if not r.data:
+            return _filtrar(list(_MOCK_FAT_EMPRESAS))
+        return _filtrar(r.data)
+    except:
+        return _filtrar(list(_MOCK_FAT_EMPRESAS))
 
 def _criar_fat_empresa(dados: dict) -> bool:
     if not SUPABASE_OK:
