@@ -141,11 +141,14 @@ EMPRESAS = [
 
 ACOES_EMPRESA = {
     "Empresa Alfa, Lda": [
-        {"acao": "Ação 1 - Excel Avançado",    "formandos": 12, "certificados": 11, "volume_horas": 30, "valor_compete": 4500.0},
-        {"acao": "Ação 2 - Gestão de Equipas", "formandos": 8,  "certificados": 8,  "volume_horas": 25, "valor_compete": 3200.0},
+        {"acao": "Ação 1 - Excel Avançado",    "formandos": 12, "certificados": 11, "volume_horas": 30,
+         "valor_compete": 4500.0, "valor_mentores": 3000.0, "reembolso": True,  "faturada": True,  "paga": True},
+        {"acao": "Ação 2 - Gestão de Equipas", "formandos": 8,  "certificados": 8,  "volume_horas": 25,
+         "valor_compete": 3200.0, "valor_mentores": 2100.0, "reembolso": True,  "faturada": True,  "paga": False},
     ],
     "Beta Serviços, SA": [
-        {"acao": "Ação 1 - Marketing Digital", "formandos": 10, "certificados": 9, "volume_horas": 40, "valor_compete": 6000.0},
+        {"acao": "Ação 1 - Marketing Digital", "formandos": 10, "certificados": 9, "volume_horas": 40,
+         "valor_compete": 6000.0, "valor_mentores": 4000.0, "reembolso": False, "faturada": False, "paga": False},
     ],
 }
 
@@ -240,8 +243,6 @@ def _render_formadores():
 def _empresas_todas():
     """Empresas base + as adicionadas nesta sessão (apenas visual)."""
     return EMPRESAS + st.session_state.get("empresas_extra_clusters", [])
-
-
 def _render_empresas():
     with st.expander("Empresas", expanded=False):
         vista = st.radio(
@@ -251,7 +252,6 @@ def _render_empresas():
             label_visibility="collapsed",
             key="emp_vista_clusters",
         )
-
         if vista == "Adicionar empresa":
             _form_adicionar_empresa()
             return
@@ -276,32 +276,25 @@ def _render_empresas():
             st.info("Sem ações de formação registadas para esta empresa.")
             return
 
-        total = 0.0
+        total_compete = 0.0
+        total_mentores = 0.0
         for a in acoes:
             with st.container(border=True):
                 st.markdown(f"**{a['acao']}**")
-                c1, c2, c3 = st.columns(3)
+                c1, c2, c3, c4 = st.columns(4)
                 c1.metric("Formandos certificados", f"{a['certificados']}/{a['formandos']}")
                 c2.metric("Volume de formação", f"{a['volume_horas']} h")
-                c3.metric("Valor COMPETE", _eur(a["valor_compete"]))
-            total += a["valor_compete"]
+                c3.metric("Valor COMPETE (empresa)", _eur(a["valor_compete"]))
+                c4.metric("Valor Mentores fatura", _eur(a["valor_mentores"]))
+
+                s1, s2, s3 = st.columns(3)
+                s1.write("Reembolso: " + ("✅ Sim" if a["reembolso"] else "⏳ Não"))
+                s2.write("Faturada à empresa: " + ("✅ Sim" if a["faturada"] else "❌ Não"))
+                s3.write("Paga à Mentores: " + ("✅ Sim" if a["paga"] else "❌ Não"))
+            total_compete += a["valor_compete"]
+            total_mentores += a["valor_mentores"]
 
         st.divider()
-        st.metric("Total a receber do COMPETE", _eur(total))
-
-
-def _form_adicionar_empresa():
-    st.markdown("##### Adicionar empresa ao projeto")
-    with st.form("form_emp_clusters", clear_on_submit=True):
-        nome = st.text_input("Nome da empresa")
-        nif = st.text_input("NIF")
-        estado = st.selectbox("Estado", ["Validada", "Execução pendente"])
-        if st.form_submit_button("Adicionar"):
-            if nome and nif:
-                st.session_state.setdefault("empresas_extra_clusters", []).append(
-                    {"nome": nome, "nif": nif, "estado": estado}
-                )
-                st.success(f"Empresa «{nome}» adicionada.")
-            else:
-                st.warning("Preenche pelo menos o nome e o NIF.")
-    st.info("Faturação")
+        t1, t2 = st.columns(2)
+        t1.metric("Total COMPETE (empresa recebe)", _eur(total_compete))
+        t2.metric("Total a faturar Mentores", _eur(total_mentores))
