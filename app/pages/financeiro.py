@@ -781,7 +781,21 @@ def render(user: dict):
         n_pre = len(st.session_state.mock_pre)
     label_alertas = f"⚠️ Alertas/A Pagar ({n_pre})" if n_pre > 0 else "⚠️ Alertas/A Pagar"
 
-    tab1, tab2, tab3 = st.tabs(["💶 Dashboard Financeiro", label_alertas, "💳 Faturação Empresas"])
+    # Contador faturas consultores pendentes
+    try:
+        from app.financeiro_consultores import _get_faturas_consultores_pendentes
+        n_fc = len(_get_faturas_consultores_pendentes())
+    except Exception:
+        n_fc = 0
+
+    label_consultores = f"🤝 Consultores ({n_fc})" if n_fc > 0 else "🤝 Consultores"
+
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "💶 Dashboard Financeiro",
+        label_alertas,
+        label_consultores,
+        "💳 Faturação Empresas",
+    ])
 
     with tab1:
         render_dashboard(user)
@@ -790,4 +804,11 @@ def render(user: dict):
         render_alertas(user)
 
     with tab3:
+        try:
+            from app.financeiro_consultores import render_consultores
+            render_consultores(user)
+        except Exception as e:
+            st.error(f"Erro ao carregar tab de consultores: {e}")
+
+    with tab4:
         st.info("🚧 Em construção — histórico de pagamentos.")
