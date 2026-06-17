@@ -1,5 +1,6 @@
 """Tab Projetos Clusters."""
 import streamlit as st
+from app import db_coordenador as db
 
 PROJETOS = ["APCMC", "ANIET", "Mentores"]
 
@@ -31,15 +32,6 @@ ACOES_FORMADOR = {
         {"acao": "Ação 1 - Dados", "fechada_magna": True, "faturou": False, "fatura": None, "paga": False},
     ],
 }
-# --- Faturação (exemplo) ---
-ACOES_FATURACAO = [
-    {"id": "f1", "acao": "Ação 1 - Cibersegurança",   "empresa": "Empresa Alfa, Lda", "valor": 3000.0},
-    {"id": "f2", "acao": "Ação 2 - Cloud",            "empresa": "Empresa Alfa, Lda", "valor": 2100.0},
-    {"id": "f3", "acao": "Ação 3 - Marketing Digital", "empresa": "Beta Serviços, SA", "valor": 4000.0},
-    {"id": "f4", "acao": "Ação 4 - Dados",            "empresa": "Gama Comércio, Lda", "valor": 1800.0},
-]
-
-ESTADOS_FAT_INICIAIS = {"f1": "Paga", "f2": "Faturada", "f3": "Fechada", "f4": "Fechada"}
 
 def render():
     _render_execucao()
@@ -305,29 +297,17 @@ def _render_empresas():
         t1, t2 = st.columns(2)
         t1.metric("Total COMPETE (empresa recebe)", _eur(total_compete))
         t2.metric("Total a faturar Mentores", _eur(total_mentores))
-def _estados_fat():
-    if "fat_estado_clusters" not in st.session_state:
-        st.session_state["fat_estado_clusters"] = dict(ESTADOS_FAT_INICIAIS)
-    return st.session_state["fat_estado_clusters"]
 
 def _render_faturacao():
     with st.expander("Faturação", expanded=False):
-        estados = _estados_fat()
-
-        def acoes_em(*ests):
-            return [a for a in ACOES_FATURACAO if estados.get(a["id"]) in ests]
-
-        # Totais
-        total_faturado = sum(a["valor"] for a in acoes_em("Faturada", "Paga"))
-        total_pago = sum(a["valor"] for a in acoes_em("Paga"))
         m1, m2 = st.columns(2)
-        m1.metric("Total já faturado", _eur(total_faturado))
-        m2.metric("Total já recebido (pago)", _eur(total_pago))
+        m1.metric("Total já faturado", _eur(sum(a["valor"] for a in db.acoes_em("Faturada", "Paga"))))
+        m2.metric("Total já recebido (pago)", _eur(sum(a["valor"] for a in db.acoes_em("Paga"))))
         st.divider()
 
-        # 1. Ações fechadas a enviar (inclui devolvidas, para reenviar)
         st.markdown("##### 1. Ações fechadas — selecionar para enviar à gestora")
-        fechadas = acoes_em("Fechada", "Devolvida")
+        estados = db.estados()
+        fechadas = db.acoes_em("Fechada", "Devolvida")
         if not fechadas:
             st.caption("Sem ações por enviar.")
         else:
@@ -341,29 +321,27 @@ def _render_faturacao():
             if st.button("📧 Enviar à gestora para confirmação", key="fat_enviar_gestora"):
                 if selecionadas:
                     for a in selecionadas:
-                        estados[a["id"]] = "Em confirmação"
+                        db.definir_estado(a["id"], "Em confirmação")
                     st.success(f"{len(selecionadas)} ação(ões) enviada(s) à gestora (15 dias para confirmar).")
                     st.rerun()
                 else:
                     st.warning("Seleciona pelo menos uma ação.")
 
-        # 2. Estado das ações enviadas (só leitura — a gestora decide no perfil dela)
-        em_conf = acoes_em("Em confirmação")
+        em_conf = db.acoes_em("Em confirmação")
         if em_conf:
             st.divider()
             st.markdown("##### 2. A aguardar confirmação da gestora (prazo: 15 dias)")
             for a in em_conf:
                 st.write(f"⏳ {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
 
-        devolvidas = acoes_em("Devolvida")
+        devolvidas = db.acoes_em("Devolvida")
         if devolvidas:
             st.divider()
             st.markdown("##### Ações devolvidas pela gestora")
             for a in devolvidas:
                 st.write(f"↩️ {a['acao']} — {a['empresa']} — {_eur(a['valor'])} — corrige e reenvia acima")
 
-        # 3. Aceites -> nota recebida por email -> carregar fatura para o financeiro
-        aceites = acoes_em("Aceite")
+        aceites = db.acoes_em("Aceite")
         if aceites:
             st.divider()
             st.markdown("##### 3. Aceites pela gestora — nota de honorários recebida por email")
@@ -375,19 +353,19 @@ def _render_faturacao():
             if st.button("Submeter fatura ao financeiro", key="fat_submeter"):
                 if ficheiro is not None:
                     for a in aceites:
-                        estados[a["id"]] = "Faturada"
+                        db.definir_estado(a["id"], "Faturada")
                     st.success("Fatura submetida ao financeiro. Aguarda pagamento.")
                     st.rerun()
                 else:
                     st.warning("Carrega o ficheiro da fatura primeiro.")
 
-        # 4. Já faturadas / pagas
         st.divider()
         st.markdown("##### Ações já faturadas e pagas")
-        fp = acoes_em("Faturada", "Paga")
+        fp = db.acoes_em("Faturada", "Paga")
         if not fp:
             st.caption("Ainda sem ações faturadas.")
         else:
+            estados = db.estados()
             for a in fp:
                 icone = "💶 Paga" if estados[a["id"]] == "Paga" else "🧾 Faturada (aguarda pagamento)"
                 st.write(f"{a['acao']} — {a['empresa']} — {_eur(a['valor'])} — {icone}")
