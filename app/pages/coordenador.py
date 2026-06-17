@@ -1,7 +1,7 @@
 """Pagina do coordenador."""
 import streamlit as st
 
-from design_coordenador import clusters, formacao, comercio
+from app.design_coordenador import clusters, formacao, comercio
 
 
 def render(user: dict):
