@@ -605,4 +605,8 @@ def render(user: dict):
             render_consultores(user)
         except Exception as e: st.error(f"Erro: {e}")
     with tab4:
-        st.markdown('<div class="fin-empty" style="margin-top:40px">🚧 Em construção — histórico de pagamentos por empresa.</div>',unsafe_allow_html=True)
+        try:
+            from app.faturacao_empresas import render_faturacao_empresas
+            render_faturacao_empresas(user)
+        except Exception as e:
+            st.error(f"Erro na tab Faturação Empresas: {e}")
