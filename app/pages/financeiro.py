@@ -1,4 +1,4 @@
-"""Pagina do financeiro."""
+"""Pagina do financeiro.""
 from __future__ import annotations
 
 import io
