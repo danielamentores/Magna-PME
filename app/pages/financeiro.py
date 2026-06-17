@@ -28,7 +28,10 @@ try:
         aprovar_fatura,
         rejeitar_fatura,
         marcar_paga,
+        get_supabase,
     )
+    # Testa ligação real — se as variáveis de ambiente estiverem em falta, falha aqui
+    get_supabase()
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
@@ -769,7 +772,13 @@ def render(user: dict):
     st.header(f"Bem-vindo, {user['nome']}")
     st.caption("Perfil: Financeiro")
 
-    n_pre = len(st.session_state.mock_pre) if not SUPABASE_OK else len(get_faturas_pre_aprovacao())
+    if SUPABASE_OK:
+        try:
+            n_pre = len(get_faturas_pre_aprovacao())
+        except Exception:
+            n_pre = 0
+    else:
+        n_pre = len(st.session_state.mock_pre)
     label_alertas = f"⚠️ Alertas/A Pagar ({n_pre})" if n_pre > 0 else "⚠️ Alertas/A Pagar"
 
     tab1, tab2, tab3 = st.tabs(["💶 Dashboard Financeiro", label_alertas, "💳 Faturação Empresas"])
