@@ -386,7 +386,7 @@ def _login_simulado():
     <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
                 border:1px solid rgba(245,158,11,0.3);border-radius:8px">
       <div style="font-size:11px;font-weight:600;color:#B45309">🚧 Ambiente de Teste</div>
-      <div style="font-size:11px;color:#92400E;margin-top:2px">Dados fictícios · v0.1-beta</div>
+      <div style="font-size:11px;color:#92400E;margin-top:2px">· v0.1-beta</div>
     </div>
     <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
       🔒 Login OAuth Google em implementação
