@@ -45,22 +45,25 @@ header[data-testid="stHeader"]     { display: none !important; }
 #MainMenu                          { display: none !important; }
 footer                             { display: none !important; }
 
-/* ── Sidebar ── */
+/* ── Sidebar Redesenhada ── */
 [data-testid="stSidebar"] {
   background-color: var(--mt-dark) !important;
   border-right: none !important;
 }
 [data-testid="stSidebar"] * { color: #FFFFFF !important; }
 [data-testid="stSidebar"] .stButton button {
-  background: rgba(255,255,255,0.08) !important;
+  background: rgba(255,255,255,0.05) !important;
   color: #fff !important;
-  border: 1px solid rgba(255,255,255,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
   border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 13px !important;
+  padding: 10px 16px !important;
+  transition: all 0.2s ease !important;
 }
 [data-testid="stSidebar"] .stButton button:hover {
-  background: rgba(255,255,255,0.15) !important;
+  background: rgba(255,255,255,0.12) !important;
+  border-color: rgba(255,255,255,0.35) !important;
 }
 
 /* ── Layout principal ── */
@@ -221,200 +224,25 @@ def _supabase_status() -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 def _render_sidebar(user: dict):
     with st.sidebar:
+        # Logo / nome
         st.markdown("""
-        <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px">
-          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);
-                      letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px"></div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5)">Gestão de Formação</div>
+        <div style="padding:24px 12px 20px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:20px">
+          <div style="font-size:20px; font-weight:800; color:#FFFFFF; letter-spacing:-0.5px; margin-bottom:4px">MAGNA PME</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.6); font-weight:400">Gestão de Formação</div>
         </div>
         """, unsafe_allow_html=True)
 
-        perfil_icons  = {"formador":"👤","coordenador":"📋","gestor_projeto":"📊","financeiro":"💶","admin":"⚙️"}
+        # Card utilizador estruturado
+        perfil_icons  = {"formador":"👤","coordenador":"📋","gestor_projeto":"📊","financeiro":"💷","admin":"⚙️"}
         perfil_labels = {"formador":"Formador","coordenador":"Coordenador",
                          "gestor_projeto":"Gestor de Projeto","financeiro":"Financeiro","admin":"Administrador"}
         icon  = perfil_icons.get(user["role"], "👤")
         label = perfil_labels.get(user["role"], user["role"])
 
         st.markdown(f"""
-        <div style="background:rgba(42,122,140,0.2);border:1px solid rgba(42,122,140,0.35);
-                    border-radius:10px;padding:12px 14px;margin-bottom:20px">
-          <div style="font-size:14px;font-weight:600;color:#fff">{icon}&nbsp;&nbsp;{user['nome']}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px">{label}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        agora = datetime.now()
-        st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;padding:0 2px">
-          📅&nbsp;{agora.strftime("%d %b %Y")}&nbsp;&nbsp;⏰&nbsp;{agora.strftime("%H:%M")}
-        </div>
-        """, unsafe_allow_html=True)
-
-        sb_ok, sb_label = _supabase_status()
-        sb_color = "#22C55E" if sb_ok else "#F59E0B"
-        st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;padding:0 2px">
-          <span style="color:{sb_color}">●</span>&nbsp;BD {sb_label}
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("⎋  Sair da sessão", use_container_width=True, key="btn_sair"):
-            st.session_state.user = None
-            st.rerun()
-
-        st.markdown("""
-        <div style="margin-top:24px;padding:10px 12px;background:rgba(245,158,11,0.15);
-                    border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de Teste</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">
-            Dados fictícios · v0.1-beta
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div style="position:fixed;bottom:16px;font-size:10px;color:rgba(255,255,255,0.2)">
-          Mentores & Tutores © 2026
-        </div>
-        """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# BANNER TESTE
-# ---------------------------------------------------------------------------
-def _banner_teste():
-    st.markdown("""
-    <div style="background:#FFFBEB;border-bottom:1px solid #FCD34D;
-                padding:8px 24px;margin:-1rem -2.5rem 1.5rem -2.5rem;
-                display:flex;align-items:center;gap:10px;font-size:13px;color:#92400E">
-      <span>🚧</span>
-      <strong>Ambiente de teste</strong>
-      <span style="color:#D97706">—</span>
-      <span>Os dados apresentados são fictícios. Não realizar operações reais nesta versão.</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# CABEÇALHO DE PÁGINA
-# ---------------------------------------------------------------------------
-def _page_header(user: dict, titulo: str, subtitulo: str = ""):
-    agora = datetime.now()
-    saudacao = "Bom dia" if agora.hour < 12 else ("Boa tarde" if agora.hour < 18 else "Boa noite")
-    sub = subtitulo or f"{saudacao}, {user['nome']}"
-    st.markdown(f"""
-    <div style="padding:1.5rem 2rem 1rem;border-bottom:1px solid #DDE4EA;
-                margin:-1rem -2rem 1.5rem -2rem;background:#fff">
-      <div style="font-size:22px;font-weight:700;color:#1B3A4B">{titulo}</div>
-      <div style="font-size:13px;color:#6B8090;margin-top:4px">{sub}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# LOGIN
-# ---------------------------------------------------------------------------
-def _login_simulado():
-    perfis = {
-        "formador":       {"icon": "👤", "label": "Formador",          "desc": "Submissão de Faturas e Gestão de Ações",                 "nome": "Formadora",   "email": "formadora@demo.pt"},
-        "coordenador":    {"icon": "📋", "label": "Coordenador",       "desc": "Gestão de Formandos, Formadores e Execução de Projetos", "nome": "Coordenador", "email": "coordenador@demo.pt"},
-        "gestor_projeto": {"icon": "📊", "label": "Gestor de Projeto", "desc": "Visão Geral e Indicadores de Projetos",                  "nome": "Gestora",     "email": "gestora@demo.pt"},
-        "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
-    }
-    # CSS só do login (não afeta o resto da app, porque esta função
-    # não corre depois de entrares)
-    st.markdown("""
-    <style>
-    [data-testid="stSidebar"] { display: none !important; }
-    .main .block-container { max-width: 480px !important; margin: 0 auto !important; padding-top: 5vh !important; }
-    .main .block-container .stButton > button {
-        background: #FFFFFF !important;
-        border: 1px solid #DDE4EA !important;
-        border-radius: 12px !important;
-        padding: 18px 20px !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        color: #1B3A4B !important;
-        text-align: left !important;
-        white-space: normal !important;
-        line-height: 1.3 !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        margin-bottom: 4px !important;
-    }
-    .main .block-container .stButton > button:hover {
-        border-color: #2A7A8C !important;
-        background: #EBF5F7 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="text-align:center;margin-bottom:6px">
-      <div style="font-size:26px;font-weight:800;color:#1B3A4B">Magna PME</div>
-      <div style="font-size:13px;color:#6B8090">Mentores &amp; Tutores · Gestão de Formação</div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:#6B8090;letter-spacing:.1em;
-                text-transform:uppercase;margin:26px 0 14px">Aceder como</div>
-    """, unsafe_allow_html=True)
-
-    for role, info in perfis.items():
-        if st.button(f"{info['icon']}   {info['label']}", key=f"login_{role}", use_container_width=True):
-            st.session_state.user = {"nome": info["nome"], "email": info["email"], "role": role}
-            st.rerun()
-        st.caption(info["desc"])
-
-    st.markdown("""
-    <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
-                border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-      <div style="font-size:11px;font-weight:600;color:#B45309"> Ambiente de Teste</div>
-      <div style="font-size:11px;color:#92400E;margin-top:2px">· v0.1-beta</div>
-    </div>
-    <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
-      🔒 Login OAuth Google em implementação
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# MAIN
-# ---------------------------------------------------------------------------
-def main():
-    get_settings()
-
-    if "user" not in st.session_state:
-        st.session_state.user = None
-
-    if st.session_state.user is None:
-        _login_simulado()
-        return
-
-    user = st.session_state.user
-    _render_sidebar(user)
-
-    st.markdown("""
-    <div style="padding:1.5rem 2rem 0">
-    """, unsafe_allow_html=True)
-
-    _banner_teste()
-
-    role = user["role"]
-    if role == "formador":
-        from app.pages.formador import render
-        render(user)
-    elif role == "coordenador":
-        from app.pages.coordenador import render
-        render(user)
-    elif role == "gestor_projeto":
-        from app.pages.gestor import render
-        render(user)
-    elif role in ("financeiro", "admin"):
-        from app.pages.financeiro import render
-        render(user)
-    else:
-        st.error(f"Perfil desconhecido: {role}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-if __name__ == "__main__":
-    main()
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+                    border-radius:12px; padding:16px; margin-bottom:24px">
+          <div style="display:flex; align-items:center; gap:12px">
+            <div style="font-size:22px; background:rgba(255,255,255,0.1); width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center">{icon}</div>
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#
