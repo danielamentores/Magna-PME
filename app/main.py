@@ -263,7 +263,7 @@ def _render_sidebar(user: dict):
         st.markdown("""
         <div style="margin-top:24px;padding:10px 12px;background:rgba(245,158,11,0.15);
                     border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de teste</div>
+          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de Teste</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">
             Dados fictícios · v0.1-beta
           </div>
@@ -322,10 +322,10 @@ def _login_simulado():
     """, unsafe_allow_html=True)
 
     perfis = {
-        "formador":       {"icon":"👤","label":"Formador",       "desc":"Submissão de faturas e gestão de ações",      "nome":"Formadora",   "email":"formadora@demo.pt"},
-        "coordenador":    {"icon":"📋","label":"Coordenador",    "desc":"Gestão de formandos e execução de projetos",  "nome":"Coordenador", "email":"coordenador@demo.pt"},
-        "gestor_projeto": {"icon":"📊","label":"Gestor de Projeto","desc":"Visão geral e indicadores de projetos",    "nome":"Gestora",     "email":"gestora@demo.pt"},
-        "financeiro":     {"icon":"💶","label":"Financeiro",     "desc":"Gestão financeira e faturação",              "nome":"Financeiro",  "email":"financeiro@demo.pt"},
+        "formador":       {"icon":"👤","label":"Formador",       "desc":"Submissão de Faturas e Gestão de Ações",      "nome":"Formadora",   "email":"formadora@demo.pt"},
+        "coordenador":    {"icon":"📋","label":"Coordenador",    "desc":"Gestão de Formandos, Formadores e Execução de Projetos",  "nome":"Coordenador", "email":"coordenador@demo.pt"},
+        "gestor_projeto": {"icon":"📊","label":"Gestor de Projeto","desc":"Visão Geral e Indicadores de Projetos",    "nome":"Gestora",     "email":"gestora@demo.pt"},
+        "financeiro":     {"icon":"💶","label":"Financeiro",     "desc":"Gestão Financeira e Faturação",              "nome":"Financeiro",  "email":"financeiro@demo.pt"},
     }
 
     sel = st.session_state.get("login_sel", "formador")
@@ -415,7 +415,7 @@ def _login_simulado():
         <div class="aceder">Aceder como</div>
         {cards_html}
         <div class="test-banner" style="margin-top:28px">
-          <h4>🚧 Ambiente de teste</h4>
+          <h4>🚧 Ambiente de Teste</h4>
           <p>Dados fictícios · v0.1-beta</p>
         </div>
       </div>
