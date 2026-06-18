@@ -1,5 +1,6 @@
 """Magna PME - entrypoint da app Streamlit."""
 from __future__ import annotations
+from datetime import datetime
 import streamlit as st
 from core.config import get_settings
 
@@ -11,14 +12,12 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# CSS GLOBAL — aplica-se a TODAS as páginas
+# CSS GLOBAL
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-/* ── Importar fonte profissional ────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ── Variáveis de cor Mentores & Tutores ────────────────── */
 :root {
   --mt-dark:    #1B3A4B;
   --mt-teal:    #2A7A8C;
@@ -29,56 +28,45 @@ st.markdown("""
   --mt-border:  #DDE4EA;
   --mt-text:    #1B3A4B;
   --mt-muted:   #6B8090;
-  --mt-success: #16A34A;
-  --mt-warn:    #D97706;
-  --mt-error:   #DC2626;
 }
 
-/* ── Fonte base ──────────────────────────────────────────── */
 html, body, [class*="css"], .stApp {
   font-family: 'Inter', sans-serif !important;
   color: var(--mt-text) !important;
 }
-
-/* ── Fundo geral ─────────────────────────────────────────── */
 .stApp { background-color: var(--mt-bg) !important; }
-.stApp > header { background-color: var(--mt-white) !important; border-bottom: 1px solid var(--mt-border); }
+.stApp > header { display: none !important; }
 
-/* ── Sidebar ─────────────────────────────────────────────── */
+/* ── Sidebar ── */
 [data-testid="stSidebar"] {
   background-color: var(--mt-dark) !important;
   border-right: none !important;
 }
 [data-testid="stSidebar"] * { color: #FFFFFF !important; }
 [data-testid="stSidebar"] .stButton button {
-  background: rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.08) !important;
   color: #fff !important;
-  border: 1px solid rgba(255,255,255,0.2) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
   border-radius: 8px !important;
   font-weight: 500 !important;
+  font-size: 13px !important;
 }
 [data-testid="stSidebar"] .stButton button:hover {
-  background: rgba(255,255,255,0.2) !important;
-}
-[data-testid="stSidebar"] .stSuccess {
-  background: rgba(42,122,140,0.3) !important;
-  color: #fff !important;
-  border: 1px solid rgba(42,122,140,0.5) !important;
-  border-radius: 8px !important;
+  background: rgba(255,255,255,0.15) !important;
 }
 
-/* ── Área principal ──────────────────────────────────────── */
+/* ── Layout principal ── */
 .main .block-container {
-  padding: 2rem 2.5rem 2rem 2.5rem !important;
+  padding: 0 !important;
   max-width: 100% !important;
 }
 
-/* ── Títulos ─────────────────────────────────────────────── */
-h1 { font-size: 1.75rem !important; font-weight: 700 !important; color: var(--mt-dark) !important; margin-bottom: 0.25rem !important; }
-h2 { font-size: 1.35rem !important; font-weight: 600 !important; color: var(--mt-dark) !important; }
-h3 { font-size: 1.1rem  !important; font-weight: 600 !important; color: var(--mt-dark) !important; }
+/* ── Títulos ── */
+h1 { font-size: 1.7rem !important; font-weight: 700 !important; color: var(--mt-dark) !important; margin-bottom: 0.2rem !important; }
+h2 { font-size: 1.3rem !important; font-weight: 600 !important; color: var(--mt-dark) !important; }
+h3 { font-size: 1.05rem !important; font-weight: 600 !important; color: var(--mt-dark) !important; }
 
-/* ── Tabs ────────────────────────────────────────────────── */
+/* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
   gap: 0 !important;
   background: var(--mt-white) !important;
@@ -107,10 +95,10 @@ h3 { font-size: 1.1rem  !important; font-weight: 600 !important; color: var(--mt
   border: 1px solid var(--mt-border) !important;
   border-top: none !important;
   border-radius: 0 0 10px 10px !important;
-  padding: 1.5rem !important;
+  padding: 1.5rem 2rem !important;
 }
 
-/* ── Botões ──────────────────────────────────────────────── */
+/* ── Botões ── */
 .stButton button {
   font-family: 'Inter', sans-serif !important;
   font-weight: 500 !important;
@@ -124,18 +112,15 @@ h3 { font-size: 1.1rem  !important; font-weight: 600 !important; color: var(--mt
   color: #fff !important;
   border: none !important;
 }
-.stButton button[kind="primary"]:hover {
-  background: var(--mt-dark) !important;
-}
+.stButton button[kind="primary"]:hover { background: var(--mt-dark) !important; }
 .stButton button[kind="secondary"] {
   background: var(--mt-white) !important;
   color: var(--mt-teal) !important;
   border: 1px solid var(--mt-teal) !important;
 }
 
-/* ── Inputs ──────────────────────────────────────────────── */
-.stTextInput input, .stNumberInput input, .stDateInput input,
-.stSelectbox select, .stTextArea textarea {
+/* ── Inputs ── */
+.stTextInput input, .stNumberInput input, .stDateInput input, .stTextArea textarea {
   font-family: 'Inter', sans-serif !important;
   font-size: 13px !important;
   border-radius: 8px !important;
@@ -147,15 +132,13 @@ h3 { font-size: 1.1rem  !important; font-weight: 600 !important; color: var(--mt
   border-color: var(--mt-teal) !important;
   box-shadow: 0 0 0 2px rgba(42,122,140,0.15) !important;
 }
-
-/* ── Selectbox ───────────────────────────────────────────── */
 [data-baseweb="select"] > div {
   border-radius: 8px !important;
   border-color: var(--mt-border) !important;
   font-size: 13px !important;
 }
 
-/* ── Métricas nativas ────────────────────────────────────── */
+/* ── Métricas ── */
 [data-testid="metric-container"] {
   background: var(--mt-white) !important;
   border: 1px solid var(--mt-border) !important;
@@ -163,168 +146,290 @@ h3 { font-size: 1.1rem  !important; font-weight: 600 !important; color: var(--mt
   padding: 14px 18px !important;
 }
 [data-testid="metric-container"] label {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  color: var(--mt-muted) !important;
-  text-transform: uppercase !important;
+  font-size: 11px !important; font-weight: 600 !important;
+  color: var(--mt-muted) !important; text-transform: uppercase !important;
   letter-spacing: .05em !important;
 }
-[data-testid="stMetricValue"] {
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  color: var(--mt-dark) !important;
-}
+[data-testid="stMetricValue"] { font-size: 22px !important; font-weight: 700 !important; color: var(--mt-dark) !important; }
 [data-testid="stMetricDelta"] { display: none !important; }
 
-/* ── Containers / expanders ──────────────────────────────── */
+/* ── Expanders ── */
 [data-testid="stExpander"] {
   border: 1px solid var(--mt-border) !important;
   border-radius: 10px !important;
   background: var(--mt-white) !important;
   margin-bottom: 8px !important;
 }
-[data-testid="stExpander"] summary {
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  color: var(--mt-dark) !important;
-}
+[data-testid="stExpander"] summary { font-weight: 600 !important; font-size: 14px !important; color: var(--mt-dark) !important; }
 
-/* ── Dataframes ──────────────────────────────────────────── */
-[data-testid="stDataFrame"] {
-  border: 1px solid var(--mt-border) !important;
-  border-radius: 10px !important;
-  overflow: hidden !important;
-}
+/* ── Dataframes ── */
+[data-testid="stDataFrame"] { border: 1px solid var(--mt-border) !important; border-radius: 10px !important; overflow: hidden !important; }
 
-/* ── Alerts / info / warning / success ───────────────────── */
-.stAlert {
-  border-radius: 8px !important;
-  border-left-width: 3px !important;
-  font-size: 13px !important;
-}
+/* ── File uploader ── */
+[data-testid="stFileUploader"] { border: 2px dashed var(--mt-border) !important; border-radius: 10px !important; background: var(--mt-bg) !important; }
 
-/* ── File uploader ───────────────────────────────────────── */
-[data-testid="stFileUploader"] {
-  border: 2px dashed var(--mt-border) !important;
-  border-radius: 10px !important;
-  background: var(--mt-bg) !important;
-}
+/* ── Alerts ── */
+.stAlert { border-radius: 8px !important; border-left-width: 3px !important; font-size: 13px !important; }
 
-/* ── Caption / pequeno texto ─────────────────────────────── */
-.stCaption, [data-testid="stCaptionContainer"] {
-  font-size: 12px !important;
-  color: var(--mt-muted) !important;
-}
+/* ── Caption ── */
+.stCaption, [data-testid="stCaptionContainer"] { font-size: 12px !important; color: var(--mt-muted) !important; }
 
-/* ── Scrollbar ───────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--mt-bg); }
 ::-webkit-scrollbar-thumb { background: var(--mt-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--mt-muted); }
 
-/* ── Modo escuro ─────────────────────────────────────────── */
+/* ── Containers com border ── */
+[data-testid="stVerticalBlockBorderWrapper"] {
+  border-radius: 10px !important;
+  border-color: var(--mt-border) !important;
+}
+
+/* ── Modo escuro ── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --mt-bg:     #0F1E28;
-    --mt-white:  #162636;
-    --mt-border: #243647;
-    --mt-text:   #E8EFF3;
-    --mt-muted:  #7A9AAD;
-    --mt-dark:   #E8EFF3;
+    --mt-bg:    #0F1E28; --mt-white: #162636; --mt-border: #243647;
+    --mt-text:  #E8EFF3; --mt-muted: #7A9AAD; --mt-dark:   #E8EFF3;
   }
-  .stApp { background-color: var(--mt-bg) !important; }
 }
 </style>
 """, unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------------------------
-# SIDEBAR — logo e navegação
+# HELPERS
+# ---------------------------------------------------------------------------
+def _supabase_status() -> tuple[bool, str]:
+    try:
+        from app.db_financeiro import get_supabase
+        get_supabase()
+        return True, "Ligado"
+    except Exception:
+        return False, "Desligado"
+
+
+# ---------------------------------------------------------------------------
+# SIDEBAR — após login
 # ---------------------------------------------------------------------------
 def _render_sidebar(user: dict):
     with st.sidebar:
+        # Logo / nome
         st.markdown("""
-        <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px">
-          <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.3px">Magna PME</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">Gestão de Formação</div>
+        <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);
+                      letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Magna PME</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5)">Gestão de Formação</div>
         </div>
         """, unsafe_allow_html=True)
 
-        perfil_icons = {
-            "formador":       "👤",
-            "coordenador":    "📋",
-            "gestor_projeto": "📊",
-            "financeiro":     "💶",
-            "admin":          "⚙️",
-        }
-        perfil_labels = {
-            "formador":       "Formador",
-            "coordenador":    "Coordenador",
-            "gestor_projeto": "Gestor de Projeto",
-            "financeiro":     "Financeiro",
-            "admin":          "Administrador",
-        }
+        # Card utilizador
+        perfil_icons  = {"formador":"👤","coordenador":"📋","gestor_projeto":"📊","financeiro":"💶","admin":"⚙️"}
+        perfil_labels = {"formador":"Formador","coordenador":"Coordenador",
+                         "gestor_projeto":"Gestor de Projeto","financeiro":"Financeiro","admin":"Administrador"}
         icon  = perfil_icons.get(user["role"], "👤")
         label = perfil_labels.get(user["role"], user["role"])
 
         st.markdown(f"""
-        <div style="background:rgba(42,122,140,0.25);border:1px solid rgba(42,122,140,0.4);
+        <div style="background:rgba(42,122,140,0.2);border:1px solid rgba(42,122,140,0.35);
                     border-radius:10px;padding:12px 14px;margin-bottom:20px">
-          <div style="font-size:13px;font-weight:600;color:#fff">{icon} {user['nome']}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px">{label}</div>
+          <div style="font-size:14px;font-weight:600;color:#fff">{icon}&nbsp;&nbsp;{user['nome']}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px">{label}</div>
         </div>
         """, unsafe_allow_html=True)
 
-        if st.button("⎋  Sair", use_container_width=True, key="btn_sair"):
+        # Data/hora
+        agora = datetime.now()
+        st.markdown(f"""
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;padding:0 2px">
+          📅&nbsp;{agora.strftime("%d %b %Y")}&nbsp;&nbsp;⏰&nbsp;{agora.strftime("%H:%M")}
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Estado Supabase
+        sb_ok, sb_label = _supabase_status()
+        sb_color = "#22C55E" if sb_ok else "#F59E0B"
+        sb_dot   = "●" if sb_ok else "●"
+        st.markdown(f"""
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;padding:0 2px">
+          <span style="color:{sb_color}">{sb_dot}</span>&nbsp;BD {sb_label}
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("⎋  Sair da sessão", use_container_width=True, key="btn_sair"):
             st.session_state.user = None
             st.rerun()
 
+        # Versão + ambiente de teste
         st.markdown("""
-        <div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;
-                    font-size:10px;color:rgba(255,255,255,0.25)">
+        <div style="margin-top:24px;padding:10px 12px;background:rgba(245,158,11,0.15);
+                    border:1px solid rgba(245,158,11,0.3);border-radius:8px">
+          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de teste</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">
+            Dados fictícios · v0.1-beta
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="position:fixed;bottom:16px;font-size:10px;color:rgba(255,255,255,0.2)">
           Mentores & Tutores © 2026
         </div>
         """, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# BANNER TESTE — aparece no topo de cada página
+# ---------------------------------------------------------------------------
+def _banner_teste():
+    st.markdown("""
+    <div style="background:#FFFBEB;border-bottom:1px solid #FCD34D;
+                padding:8px 24px;margin:-1rem -2.5rem 1.5rem -2.5rem;
+                display:flex;align-items:center;gap:10px;font-size:13px;color:#92400E">
+      <span>🚧</span>
+      <strong>Ambiente de teste</strong>
+      <span style="color:#D97706">—</span>
+      <span>Os dados apresentados são fictícios. Não realizar operações reais nesta versão.</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# CABEÇALHO DE PÁGINA — substitui st.header genérico
+# ---------------------------------------------------------------------------
+def _page_header(user: dict, titulo: str, subtitulo: str = ""):
+    agora = datetime.now()
+    saudacao = "Bom dia" if agora.hour < 12 else ("Boa tarde" if agora.hour < 18 else "Boa noite")
+    sub = subtitulo or f"{saudacao}, {user['nome']}"
+    st.markdown(f"""
+    <div style="padding:1.5rem 2rem 1rem;border-bottom:1px solid #DDE4EA;
+                margin:-1rem -2rem 1.5rem -2rem;background:#fff">
+      <div style="font-size:22px;font-weight:700;color:#1B3A4B">{titulo}</div>
+      <div style="font-size:13px;color:#6B8090;margin-top:4px">{sub}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------------------------
 # LOGIN
 # ---------------------------------------------------------------------------
 def _login_simulado():
-    # Cabeçalho centrado
-    col_l, col_c, col_r = st.columns([1,2,1])
-    with col_c:
+    # Esconde a sidebar no login
+    st.markdown("""
+    <style>
+    [data-testid="stSidebar"] { display: none !important; }
+    .main .block-container { padding: 0 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    perfis = {
+        "formador":       {"icon":"👤","label":"Formador",       "desc":"Submissão de faturas e gestão de ações",      "nome":"Formadora",   "email":"formadora@demo.pt"},
+        "coordenador":    {"icon":"📋","label":"Coordenador",    "desc":"Gestão de formandos e execução de projetos",  "nome":"Coordenador", "email":"coordenador@demo.pt"},
+        "gestor_projeto": {"icon":"📊","label":"Gestor de Projeto","desc":"Visão geral e indicadores de projetos",    "nome":"Gestora",     "email":"gestora@demo.pt"},
+        "financeiro":     {"icon":"💶","label":"Financeiro",     "desc":"Gestão financeira e faturação",              "nome":"Financeiro",  "email":"financeiro@demo.pt"},
+    }
+
+    sel = st.session_state.get("login_sel", "formador")
+
+    col_left, col_right = st.columns([2, 3], gap="large")
+
+    # ---- COLUNA ESQUERDA — perfis ----
+    with col_left:
         st.markdown("""
-        <div style="text-align:center;padding:48px 0 32px">
-          <div style="font-size:36px;font-weight:800;color:#1B3A4B;letter-spacing:-.5px">Magna PME</div>
-          <div style="font-size:14px;color:#6B8090;margin-top:6px">Gestão administrativa e financeira de formação</div>
+        <div style="background:#1B3A4B;min-height:100vh;padding:40px 28px;position:relative">
+          <div style="margin-bottom:48px">
+            <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px">Magna PME</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px">
+              Mentores & Tutores · Gestão de Formação
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);
+                      letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">
+            Aceder como
+          </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <div style="background:#fff;border:1px solid #DDE4EA;border-radius:14px;
-                    padding:32px;margin-bottom:24px">
-          <div style="font-size:15px;font-weight:600;color:#1B3A4B;margin-bottom:20px;text-align:center">
-            Escolhe um perfil de acesso
-          </div>
-        """, unsafe_allow_html=True)
+        for role, p in perfis.items():
+            ativo = sel == role
+            bg     = "rgba(42,122,140,0.3)"  if ativo else "rgba(255,255,255,0.04)"
+            border = "rgba(42,122,140,0.6)"  if ativo else "rgba(255,255,255,0.08)"
+            dot    = "●" if ativo else ""
+            dot_c  = "#2A7A8C" if ativo else "transparent"
 
-        perfis = {
-            "👤  Formadora":        {"nome": "Formadora",   "email": "formadora@demo.pt",   "role": "formador"},
-            "📋  Coordenador":      {"nome": "Coordenador", "email": "coordenador@demo.pt", "role": "coordenador"},
-            "📊  Gestora":          {"nome": "Gestora",     "email": "gestora@demo.pt",     "role": "gestor_projeto"},
-            "💶  Financeiro":       {"nome": "Financeiro",  "email": "financeiro@demo.pt",  "role": "financeiro"},
-        }
-        for label, dados in perfis.items():
-            if st.button(label, use_container_width=True, key=f"login_{label}"):
-                st.session_state.user = dados
+            st.markdown(f"""
+            <div style="background:{bg};border:1px solid {border};border-radius:10px;
+                        padding:14px 16px;margin-bottom:8px;cursor:pointer;
+                        display:flex;align-items:center;gap:12px">
+              <div style="font-size:22px">{p['icon']}</div>
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:600;color:#fff">{p['label']}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px">{p['desc']}</div>
+              </div>
+              <div style="color:{dot_c};font-size:8px">{dot}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button(p['label'], key=f"sel_{role}",
+                        use_container_width=True,
+                        help=p['desc']):
+                st.session_state.login_sel = role
                 st.rerun()
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
         st.markdown("""
-        <div style="text-align:center;font-size:12px;color:#6B8090">
-          🔒 Login OAuth Google em implementação
+        <div style="margin-top:32px;padding:12px 14px;background:rgba(245,158,11,0.12);
+                    border:1px solid rgba(245,158,11,0.25);border-radius:8px">
+          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de teste</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">
+            Dados fictícios · v0.1-beta
+          </div>
         </div>
         """, unsafe_allow_html=True)
+
+    # ---- COLUNA DIREITA — boas-vindas + entrar ----
+    with col_right:
+        p = perfis[sel]
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px">
+          <div style="width:100%;max-width:420px">
+
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#EBF5F7;
+                        border-radius:20px;padding:6px 14px;margin-bottom:28px">
+              <span style="font-size:14px">{p['icon']}</span>
+              <span style="font-size:11px;font-weight:600;color:#2A7A8C;text-transform:uppercase;
+                           letter-spacing:.08em">{p['label']}</span>
+            </div>
+
+            <div style="font-size:32px;font-weight:800;color:#1B3A4B;margin-bottom:8px">
+              Bem-vindo
+            </div>
+            <div style="font-size:14px;color:#6B8090;margin-bottom:36px">
+              {p['desc']}
+            </div>
+
+            <div style="background:#fff;border:1px solid #DDE4EA;border-radius:14px;padding:32px">
+              <div style="font-size:13px;color:#6B8090;margin-bottom:20px;text-align:center">
+                Clica em <strong>Entrar</strong> para aceder como {p['label']}
+              </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Entrar", type="primary", use_container_width=True, key="btn_entrar"):
+            st.session_state.user = {
+                "nome":  p["nome"],
+                "email": p["email"],
+                "role":  sel,
+            }
+            st.session_state.pop("login_sel", None)
+            st.rerun()
+
+        st.markdown("""
+            </div>
+            <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:20px">
+              🔒 Login OAuth Google em implementação
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------------------------
 # MAIN
@@ -342,6 +447,13 @@ def main():
     user = st.session_state.user
     _render_sidebar(user)
 
+    # Padding da área de conteúdo
+    st.markdown("""
+    <div style="padding:1.5rem 2rem 0">
+    """, unsafe_allow_html=True)
+
+    _banner_teste()
+
     role = user["role"]
     if role == "formador":
         from app.pages.formador import render
@@ -357,6 +469,9 @@ def main():
         render(user)
     else:
         st.error(f"Perfil desconhecido: {role}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 if __name__ == "__main__":
     main()
