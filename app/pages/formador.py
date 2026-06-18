@@ -657,10 +657,11 @@ def render(user: dict):
     n_sfat=len([a for a in _get_acoes(user.get("id") or "mock")
                 if a["estado"]=="fechada" and not a.get("tem_fatura")])
 
-    label_fat=f"📋 Faturas{' ❗' if n_rej>0 else ''}"
-    label_ac =f"📚 Ações{' 🟣' if n_sfat>0 else ''}"
+    label_1 =f"📚 Ações{' 🟣' if n_sfat>0 else ''}"
+    label_2 =f"📋 Faturas{' ❗' if n_rej>0 else ''}"
+    label_3 ="📤 Submeter fatura"
 
-    tab1,tab2,tab3=st.tabs(["📤 Submeter fatura",label_fat,label_ac])
+    tab1,tab2,tab3=st.tabs([label_1,label_2,label_3])
     with tab1: _acoes(user)
     with tab2: _faturas(user)
     with tab3: _submeter(user)
