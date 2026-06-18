@@ -339,7 +339,12 @@ def _render_faturacao():
             st.divider()
             st.markdown("##### Ações devolvidas pela gestora")
             for a in devolvidas:
-                st.write(f"↩️ {a['acao']} — {a['empresa']} — {_eur(a['valor'])} — corrige e reenvia acima")
+                st.write(f"↩️ {a['acao']} — {a['empresa']} — {_eur(a['valor'])}")
+                com = db.comentario(a["id"])
+                if com:
+                    st.caption(f"💬 Motivo: {com}")
+                else:
+                    st.caption("Corrige e reenvia acima.")
 
         aceites = db.acoes_em("Aceite")
         if aceites:
