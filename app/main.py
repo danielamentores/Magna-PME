@@ -369,7 +369,7 @@ def _login_simulado():
     st.markdown(f"""
     <div style="text-align:center;margin-bottom:6px">
       {logo_html}
-      <div style="font-size:26px;font-weight:800;color:#1B3A4B">Magna PME</div>
+      <div style="font-size:26px;font-weight:800;color:#1B3A4B"></div>
       <div style="font-size:13px;color:#6B8090">Mentores &amp; Tutores · Gestão de Formação</div>
     </div>
     <div style="font-size:11px;font-weight:600;color:#6B8090;letter-spacing:.1em;
@@ -386,7 +386,7 @@ def _login_simulado():
     <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
                 border:1px solid rgba(245,158,11,0.3);border-radius:8px">
       <div style="font-size:11px;font-weight:600;color:#B45309">🚧 Ambiente de Teste</div>
-      <div style="font-size:11px;color:#92400E;margin-top:2px">Dados fictícios · v0.1-beta</div>
+      <div style="font-size:11px;color:#92400E;margin-top:2px"> · v0.1-beta</div>
     </div>
     <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
       🔒 Login OAuth Google em implementação
