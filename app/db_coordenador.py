@@ -26,21 +26,30 @@ ESTADOS_FAT_INICIAIS = {
 
 _CHAVE = "fat_estado_partilhado"
 
-
 def estados() -> dict:
     if _CHAVE not in st.session_state:
         st.session_state[_CHAVE] = dict(ESTADOS_FAT_INICIAIS)
     return st.session_state[_CHAVE]
 
-
 def acoes_em(*ests) -> list:
     e = estados()
     return [a for a in ACOES_FATURACAO if e.get(a["id"]) in ests]
 
-
 def definir_estado(acao_id: str, novo: str):
     estados()[acao_id] = novo
 
-
 def eur(v: float) -> str:
     return f"{v:,.2f}".replace(",", " ").replace(".", ",") + " €"
+
+_CHAVE_COM = "fat_comentarios"
+
+def comentarios() -> dict:
+    if _CHAVE_COM not in st.session_state:
+        st.session_state[_CHAVE_COM] = {}
+    return st.session_state[_CHAVE_COM]
+
+def definir_comentario(acao_id: str, texto: str):
+    comentarios()[acao_id] = texto
+
+def comentario(acao_id: str) -> str:
+    return comentarios().get(acao_id, "")
