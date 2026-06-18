@@ -251,22 +251,14 @@ def _render_sidebar(user: dict):
         st.caption("🚧 Ambiente de Teste · v0.1-beta")
         st.caption("Mentores & Tutores © 2026")
 
-
 # ---------------------------------------------------------------------------
 # BANNER TESTE
 # ---------------------------------------------------------------------------
 def _banner_teste():
-    st.markdown("""
-    <div style="background:#FFFBEB;border-bottom:1px solid #FCD34D;
-                padding:8px 24px;margin:-1rem -2.5rem 1.5rem -2.5rem;
-                display:flex;align-items:center;gap:10px;font-size:13px;color:#92400E">
-      <span>🚧</span>
-      <strong>Ambiente de teste</strong>
-      <span style="color:#D97706">—</span>
-      <span>Os .</span>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.warning(
+        "🚧 **Ambiente de teste** — os dados apresentados são fictícios. "
+        "Não realizar operações reais nesta versão."
+    )
 
 # ---------------------------------------------------------------------------
 # CABEÇALHO DE PÁGINA
@@ -275,14 +267,9 @@ def _page_header(user: dict, titulo: str, subtitulo: str = ""):
     agora = datetime.now()
     saudacao = "Bom dia" if agora.hour < 12 else ("Boa tarde" if agora.hour < 18 else "Boa noite")
     sub = subtitulo or f"{saudacao}, {user['nome']}"
-    st.markdown(f"""
-    <div style="padding:1.5rem 2rem 1rem;border-bottom:1px solid #DDE4EA;
-                margin:-1rem -2rem 1.5rem -2rem;background:#fff">
-      <div style="font-size:22px;font-weight:700;color:#1B3A4B">{titulo}</div>
-      <div style="font-size:13px;color:#6B8090;margin-top:4px">{sub}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.header(titulo)
+    st.caption(sub)
+    st.divider()
 
 # ---------------------------------------------------------------------------
 # LOGIN
