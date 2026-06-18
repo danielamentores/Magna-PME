@@ -5,26 +5,26 @@ from app import db_coordenador as db
 PROJETOS = ["PRODUTECH", "CALÇADO"]
 
 VOLUMES = {
-    "PRODUTECH": {"atribuido": 1800, "realizado": 1200},
-    "CALÇADO":   {"atribuido": 1400, "realizado": 620},
+    "Projeto Multisetorial": {"atribuido": 1800, "realizado": 1200},
+    "Projeto CAP":   {"atribuido": 1400, "realizado": 620},
 }
 
 ACOES_PROJETO = {
-    "PRODUTECH": [
+    "Projeto Multisetorial": [
         {"codigo":"PROD.01.FA","nome":"Op. Seg. Equip. Movimentação Cargas 1","empresa":"J.A. Veiga de Macedo","estado":"fechada","pct":100},
         {"codigo":"PROD.02.FA","nome":"Op. Seg. Equip. Movimentação Cargas 2","empresa":"J.A. Veiga de Macedo","estado":"fechada","pct":100},
         {"codigo":"PROD.03.FA","nome":"Gestão eficiente de equipamentos","empresa":"Manuaço","estado":"a_decorrer","pct":55},
     ],
-    "CALÇADO": [
-        {"codigo":"CALC.01.FA","nome":"Técnicas de costura industrial","empresa":"Calçado Norte, Lda","estado":"fechada","pct":100},
-        {"codigo":"CALC.02.FA","nome":"Controlo de qualidade no calçado","empresa":"Calçado Norte, Lda","estado":"a_decorrer","pct":40},
+    "Projeto CAP": [
+        {"codigo":"CALC.01.FA","nome":"Técnicas de costura industrial","empresa":"Norte, Lda","estado":"fechada","pct":100},
+        {"codigo":"CALC.02.FA","nome":"Controlo de qualidade no calçado","empresa":"Norte, Lda","estado":"a_decorrer","pct":40},
     ],
 }
 
 FORMADORES = [
-    {"nome":"Ivo Daniel Monteiro","consultor":"Etapas Pioneiras, Lda","projeto":"PRODUTECH"},
-    {"nome":"Carla Neves",        "consultor":"Winet Consulting, Lda", "projeto":"PRODUTECH"},
-    {"nome":"Rui Mendes",         "consultor":"FormaConsult, Unip.Lda","projeto":"CALÇADO"},
+    {"nome":"Ivo Daniel Monteiro","consultor":"Etapas Pioneiras, Lda","projeto":"Projeto Multisetorial"},
+    {"nome":"Carla Neves",        "consultor":"Winet Consulting, Lda", "projeto":"Projeto Multisetorial"},
+    {"nome":"Rui Mendes",         "consultor":"FormaConsult, Unip.Lda","projeto":"Projeto CAP"},
 ]
 
 ACOES_FORMADOR = {
