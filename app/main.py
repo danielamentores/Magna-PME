@@ -325,9 +325,9 @@ def _login_simulado():
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
 
-    # Carrega o logo
+    # Carrega o logo (põe o ficheiro num destes caminhos)
     logo_b64 = ""
-    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
+    for caminho in ["app/assets/logo.png", "assets/logo.png", "logo.png"]:
         f = Path(caminho)
         if f.exists():
             logo_b64 = base64.b64encode(f.read_bytes()).decode()
@@ -350,7 +350,7 @@ def _login_simulado():
         font-size: 15px !important;
         font-weight: 600 !important;
         color: #1B3A4B !important;
-        justify-content: flex-start !important;
+        justify-content: flex-start !important;   /* alinha o conteúdo à esquerda */
         text-align: left !important;
         white-space: normal !important;
         line-height: 1.3 !important;
@@ -392,7 +392,6 @@ def _login_simulado():
       🔒 Login OAuth Google em implementação
     </div>
     """, unsafe_allow_html=True)
-
 
 # ---------------------------------------------------------------------------
 # MAIN
