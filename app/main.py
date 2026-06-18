@@ -221,12 +221,11 @@ def _supabase_status() -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 def _render_sidebar(user: dict):
     with st.sidebar:
-       st.markdown("""
-        <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);
-                    margin-bottom:16px;background:#0A1F33;border-radius:10px">
-          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);
+        st.markdown("""
+        <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4) !important;
                       letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Magna PME</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5)">Gestão de Formação</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5) !important">Gestão de Formação</div>
         </div>
         """, unsafe_allow_html=True)
 
