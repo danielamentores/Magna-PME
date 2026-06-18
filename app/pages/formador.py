@@ -83,7 +83,30 @@ def label_estado_acao(estado):
         "terminada_sem_fecho": "⚠️ Por fechar",
     }.get(estado, estado)
 
+PROJETO_NUMERO = {
+    "ANIET": "01196000",
+    "APCMC": "01195400",
+    "APIMA": "01194800",
+    "MENTORES": "01195000",
+    "MENTORES CALÇADO": "02981900",
+    "MENTORES PRODUTECH": "02982000",
+}
 
+
+def descritivo_fatura(acao):
+    """Monta o descritivo a usar na fatura, conforme o projeto."""
+    proj = (acao.get("projeto") or "").strip().upper()
+    numero = PROJETO_NUMERO.get(proj)
+    if not numero:
+        return None
+    empresa = acao.get("empresa_cliente") or "—"
+    nome = acao.get("nome") or "—"
+    codigo = acao.get("codigo") or "—"
+    return (
+        f"Serviços de Formação ({empresa}, {nome} - {codigo}) "
+        f"no âmbito do Projeto Compete2030 - FSE+ - {numero}"
+    )
+    
 # ---------------------------------------------------------------------------
 # QUERIES
 # ---------------------------------------------------------------------------
@@ -259,6 +282,16 @@ def _submeter(user):
                 st.success("✅ Ação fechada — pronta a faturar.")
             else:
                 st.warning("⚠️ Ação ainda não fechada — o pagamento só é processado após fecho.")
+
+            desc = descritivo_fatura(acao_val)
+            if desc:
+                st.markdown("**Descritivo a usar na fatura** (copia para o documento):")
+                st.code(desc, language=None)
+            else:
+                st.warning(
+                    f"Projeto «{acao_val.get('projeto', '—')}» sem número de Compete definido "
+                    f"— confirma com o coordenador."
+                )
 
     st.divider()
 
