@@ -330,89 +330,126 @@ def _login_simulado():
 
     sel = st.session_state.get("login_sel", "formador")
 
-    col_left, col_right = st.columns([2, 3], gap="large")
+    # Injecta CSS específico do login + HTML completo via components
+    import streamlit.components.v1 as components
 
-    # ---- COLUNA ESQUERDA — perfis ----
-    with col_left:
-        st.markdown("""
-        <div style="background:#1B3A4B;min-height:100vh;padding:40px 28px;position:relative">
-          <div style="margin-bottom:48px">
-            <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px">Magna PME</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px">
-              Mentores & Tutores · Gestão de Formação
-            </div>
+    p = perfis[sel]
+
+    # Gera os cards dos perfis em HTML puro
+    cards_html = ""
+    for role, info in perfis.items():
+        ativo  = sel == role
+        bg     = "rgba(42,122,140,0.35)" if ativo else "rgba(255,255,255,0.05)"
+        border = "1px solid rgba(42,122,140,0.6)" if ativo else "1px solid rgba(255,255,255,0.1)"
+        dot    = '<span style="color:#2A7A8C;font-size:10px">●</span>' if ativo else ""
+        onclick = f"document.getElementById('role_input').value='{role}';document.getElementById('login_form').submit();"
+        cards_html += f"""
+        <div onclick="{onclick}" style="background:{bg};border:{border};border-radius:10px;
+             padding:14px 16px;margin-bottom:8px;cursor:pointer;
+             display:flex;align-items:center;gap:12px;transition:all .15s">
+          <div style="font-size:22px">{info['icon']}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:#fff">{info['label']}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px">{info['desc']}</div>
           </div>
-          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);
-                      letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">
-            Aceder como
-          </div>
+          {dot}
+        </div>"""
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      * {{ margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif; }}
+      body {{ background:#F4F7F9;display:flex;height:100vh;overflow:hidden; }}
+      .left {{
+        width:380px;min-width:380px;background:#1B3A4B;
+        padding:40px 28px;display:flex;flex-direction:column;
+        overflow-y:auto;
+      }}
+      .right {{
+        flex:1;display:flex;align-items:center;justify-content:center;
+        padding:40px;background:#F4F7F9;
+      }}
+      .right-inner {{ width:100%;max-width:400px; }}
+      .badge {{
+        display:inline-flex;align-items:center;gap:8px;
+        background:#EBF5F7;border-radius:20px;padding:6px 14px;margin-bottom:24px;
+      }}
+      .badge span {{ font-size:11px;font-weight:600;color:#2A7A8C;text-transform:uppercase;letter-spacing:.08em; }}
+      .title {{ font-size:32px;font-weight:800;color:#1B3A4B;margin-bottom:8px; }}
+      .subtitle {{ font-size:14px;color:#6B8090;margin-bottom:32px;line-height:1.5; }}
+      .card {{
+        background:#fff;border:1px solid #DDE4EA;border-radius:14px;padding:28px;
+      }}
+      .card p {{ font-size:13px;color:#6B8090;text-align:center;margin-bottom:20px; }}
+      .btn {{
+        width:100%;padding:14px;background:#2A7A8C;color:#fff;border:none;
+        border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;
+        transition:background .15s;
+      }}
+      .btn:hover {{ background:#1B3A4B; }}
+      .oauth {{ text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px; }}
+      .brand {{ margin-bottom:40px; }}
+      .brand h1 {{ font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px; }}
+      .brand p {{ font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px; }}
+      .aceder {{ font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);
+                 letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px; }}
+      .test-banner {{
+        margin-top:auto;padding:12px 14px;
+        background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:8px;
+      }}
+      .test-banner h4 {{ font-size:11px;font-weight:600;color:#FCD34D;margin-bottom:2px; }}
+      .test-banner p {{ font-size:11px;color:rgba(255,255,255,0.35); }}
+      form {{ display:none; }}
+    </style>
+    </head>
+    <body>
+      <div class="left">
+        <div class="brand">
+          <h1>Magna PME</h1>
+          <p>Mentores &amp; Tutores · Gestão de Formação</p>
         </div>
-        """, unsafe_allow_html=True)
+        <div class="aceder">Aceder como</div>
+        {cards_html}
+        <div class="test-banner" style="margin-top:28px">
+          <h4>🚧 Ambiente de teste</h4>
+          <p>Dados fictícios · v0.1-beta</p>
+        </div>
+      </div>
+      <div class="right">
+        <div class="right-inner">
+          <div class="badge">
+            <span style="font-size:18px">{p['icon']}</span>
+            <span>{p['label']}</span>
+          </div>
+          <div class="title">Bem-vindo</div>
+          <div class="subtitle">{p['desc']}</div>
+          <div class="card">
+            <p>Clica em <strong>Entrar</strong> para aceder como <strong>{p['label']}</strong></p>
+            <button class="btn" onclick="window.parent.postMessage({{type:'streamlit:setComponentValue',value:'{sel}'}}, '*')">
+              Entrar
+            </button>
+          </div>
+          <div class="oauth">🔒 Login OAuth Google em implementação</div>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
 
-        for role, p in perfis.items():
-            ativo = sel == role
-            bg     = "rgba(42,122,140,0.3)"  if ativo else "rgba(255,255,255,0.04)"
-            border = "rgba(42,122,140,0.6)"  if ativo else "rgba(255,255,255,0.08)"
-            dot    = "●" if ativo else ""
-            dot_c  = "#2A7A8C" if ativo else "transparent"
-
-            st.markdown(f"""
-            <div style="background:{bg};border:1px solid {border};border-radius:10px;
-                        padding:14px 16px;margin-bottom:8px;cursor:pointer;
-                        display:flex;align-items:center;gap:12px">
-              <div style="font-size:22px">{p['icon']}</div>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:600;color:#fff">{p['label']}</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px">{p['desc']}</div>
-              </div>
-              <div style="color:{dot_c};font-size:8px">{dot}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            if st.button(p['label'], key=f"sel_{role}",
-                        use_container_width=True,
-                        help=p['desc']):
+    # Renderiza o HTML + captura clique via component
+    col_left, col_right = st.columns([2, 3])
+    with col_left:
+        # Botões Streamlit invisíveis para selecionar perfil
+        for role, info in perfis.items():
+            if st.button(info['label'], key=f"sel_{role}", help=info['desc']):
                 st.session_state.login_sel = role
                 st.rerun()
-
-        st.markdown("""
-        <div style="margin-top:32px;padding:12px 14px;background:rgba(245,158,11,0.12);
-                    border:1px solid rgba(245,158,11,0.25);border-radius:8px">
-          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de teste</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px">
-            Dados fictícios · v0.1-beta
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ---- COLUNA DIREITA — boas-vindas + entrar ----
     with col_right:
-        p = perfis[sel]
-        st.markdown(f"""
-        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px">
-          <div style="width:100%;max-width:420px">
-
-            <div style="display:inline-flex;align-items:center;gap:8px;background:#EBF5F7;
-                        border-radius:20px;padding:6px 14px;margin-bottom:28px">
-              <span style="font-size:14px">{p['icon']}</span>
-              <span style="font-size:11px;font-weight:600;color:#2A7A8C;text-transform:uppercase;
-                           letter-spacing:.08em">{p['label']}</span>
-            </div>
-
-            <div style="font-size:32px;font-weight:800;color:#1B3A4B;margin-bottom:8px">
-              Bem-vindo
-            </div>
-            <div style="font-size:14px;color:#6B8090;margin-bottom:36px">
-              {p['desc']}
-            </div>
-
-            <div style="background:#fff;border:1px solid #DDE4EA;border-radius:14px;padding:32px">
-              <div style="font-size:13px;color:#6B8090;margin-bottom:20px;text-align:center">
-                Clica em <strong>Entrar</strong> para aceder como {p['label']}
-              </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("Entrar", type="primary", use_container_width=True, key="btn_entrar"):
+        if st.button("▶ Entrar", type="primary", use_container_width=True, key="btn_entrar"):
             st.session_state.user = {
                 "nome":  p["nome"],
                 "email": p["email"],
@@ -421,14 +458,8 @@ def _login_simulado():
             st.session_state.pop("login_sel", None)
             st.rerun()
 
-        st.markdown("""
-            </div>
-            <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:20px">
-              🔒 Login OAuth Google em implementação
-            </div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+    # Overlay HTML decorativo (não interativo)
+    components.html(html, height=700, scrolling=False)
 
 
 # ---------------------------------------------------------------------------
