@@ -271,6 +271,9 @@ def _page_header(user: dict, titulo: str, subtitulo: str = ""):
     st.caption(sub)
     st.divider()
 
+# ---------------------------------------------------------------------------
+# LOGIN
+# ---------------------------------------------------------------------------
 def _login_simulado():
     from pathlib import Path
 
