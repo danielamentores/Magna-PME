@@ -2,7 +2,7 @@
 import streamlit as st
 from app import db_coordenador as db
 
-PROJETOS = ["PRODUTECH", "CALÇADO"]
+PROJETOS = ["Multisetorial", "CAP"]
 
 VOLUMES = {
     "Projeto Multisetorial": {"atribuido": 1800, "realizado": 1200},
