@@ -245,7 +245,7 @@ def _render_sidebar(user: dict):
 
         agora = datetime.now()
         st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;padding:0 2px">
+        <div style="font-size:12px;color:rgba(255,255,255,1);margin-bottom:6px;padding:0 2px">
           📅&nbsp;{agora.strftime("%d %b %Y")}&nbsp;&nbsp;⏰&nbsp;{agora.strftime("%H:%M")}
         </div>
         """, unsafe_allow_html=True)
@@ -253,7 +253,7 @@ def _render_sidebar(user: dict):
         sb_ok, sb_label = _supabase_status()
         sb_color = "#22C55E" if sb_ok else "#F59E0B"
         st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;padding:0 2px">
+        <div style="font-size:12px;color:rgba(255,255,255,1);margin-bottom:20px;padding:0 2px">
           <span style="color:{sb_color}">●</span>&nbsp;BD {sb_label}
         </div>
         """, unsafe_allow_html=True)
