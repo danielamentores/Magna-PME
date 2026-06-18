@@ -35,7 +35,15 @@ html, body, [class*="css"], .stApp {
   color: var(--mt-text) !important;
 }
 .stApp { background-color: var(--mt-bg) !important; }
-.stApp > header { display: none !important; }
+
+/* ── Esconde toolbar do Streamlit (botões a vermelho/Deploy/menu) ── */
+.stApp > header                    { display: none !important; }
+[data-testid="stToolbar"]          { display: none !important; }
+[data-testid="stDecoration"]       { display: none !important; }
+[data-testid="stStatusWidget"]     { display: none !important; }
+header[data-testid="stHeader"]     { display: none !important; }
+#MainMenu                          { display: none !important; }
+footer                             { display: none !important; }
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
@@ -330,12 +338,10 @@ def _login_simulado():
 
     sel = st.session_state.get("login_sel", "formador")
 
-    # Injecta CSS específico do login + HTML completo via components
     import streamlit.components.v1 as components
 
     p = perfis[sel]
 
-    # Gera os cards dos perfis em HTML puro
     cards_html = ""
     for role, info in perfis.items():
         ativo  = sel == role
@@ -440,10 +446,8 @@ def _login_simulado():
     </html>
     """
 
-    # Renderiza o HTML + captura clique via component
     col_left, col_right = st.columns([2, 3])
     with col_left:
-        # Botões Streamlit invisíveis para selecionar perfil
         for role, info in perfis.items():
             if st.button(info['label'], key=f"sel_{role}", help=info['desc']):
                 st.session_state.login_sel = role
@@ -458,7 +462,6 @@ def _login_simulado():
             st.session_state.pop("login_sel", None)
             st.rerun()
 
-    # Overlay HTML decorativo (não interativo)
     components.html(html, height=700, scrolling=False)
 
 
@@ -478,7 +481,6 @@ def main():
     user = st.session_state.user
     _render_sidebar(user)
 
-    # Padding da área de conteúdo
     st.markdown("""
     <div style="padding:1.5rem 2rem 0">
     """, unsafe_allow_html=True)
