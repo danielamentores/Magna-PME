@@ -36,7 +36,7 @@ html, body, [class*="css"], .stApp {
 }
 .stApp { background-color: var(--mt-bg) !important; }
 
-/* ── Esconde toolbar do Streamlit (botões a vermelho/Deploy/menu) ── */
+/* ── Esconde toolbar do Streamlit ── */
 .stApp > header                    { display: none !important; }
 [data-testid="stToolbar"]          { display: none !important; }
 [data-testid="stDecoration"]       { display: none !important; }
@@ -221,7 +221,6 @@ def _supabase_status() -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 def _render_sidebar(user: dict):
     with st.sidebar:
-        # Logo / nome
         st.markdown("""
         <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px">
           <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);
@@ -230,7 +229,6 @@ def _render_sidebar(user: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Card utilizador
         perfil_icons  = {"formador":"👤","coordenador":"📋","gestor_projeto":"📊","financeiro":"💶","admin":"⚙️"}
         perfil_labels = {"formador":"Formador","coordenador":"Coordenador",
                          "gestor_projeto":"Gestor de Projeto","financeiro":"Financeiro","admin":"Administrador"}
@@ -245,7 +243,6 @@ def _render_sidebar(user: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Data/hora
         agora = datetime.now()
         st.markdown(f"""
         <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;padding:0 2px">
@@ -253,13 +250,11 @@ def _render_sidebar(user: dict):
         </div>
         """, unsafe_allow_html=True)
 
-        # Estado Supabase
         sb_ok, sb_label = _supabase_status()
         sb_color = "#22C55E" if sb_ok else "#F59E0B"
-        sb_dot   = "●" if sb_ok else "●"
         st.markdown(f"""
         <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;padding:0 2px">
-          <span style="color:{sb_color}">{sb_dot}</span>&nbsp;BD {sb_label}
+          <span style="color:{sb_color}">●</span>&nbsp;BD {sb_label}
         </div>
         """, unsafe_allow_html=True)
 
@@ -267,7 +262,6 @@ def _render_sidebar(user: dict):
             st.session_state.user = None
             st.rerun()
 
-        # Versão + ambiente de teste
         st.markdown("""
         <div style="margin-top:24px;padding:10px 12px;background:rgba(245,158,11,0.15);
                     border:1px solid rgba(245,158,11,0.3);border-radius:8px">
@@ -286,7 +280,7 @@ def _render_sidebar(user: dict):
 
 
 # ---------------------------------------------------------------------------
-# BANNER TESTE — aparece no topo de cada página
+# BANNER TESTE
 # ---------------------------------------------------------------------------
 def _banner_teste():
     st.markdown("""
@@ -302,7 +296,7 @@ def _banner_teste():
 
 
 # ---------------------------------------------------------------------------
-# CABEÇALHO DE PÁGINA — substitui st.header genérico
+# CABEÇALHO DE PÁGINA
 # ---------------------------------------------------------------------------
 def _page_header(user: dict, titulo: str, subtitulo: str = ""):
     agora = datetime.now()
@@ -331,14 +325,17 @@ def _login_simulado():
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
 
-    # Carrega o logo (põe o ficheiro num destes caminhos)
+    # Carrega o logo
     logo_b64 = ""
-     logo_b64 = ""
     for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
         f = Path(caminho)
         if f.exists():
             logo_b64 = base64.b64encode(f.read_bytes()).decode()
             break
+    logo_html = (
+        f'<img src="data:image/png;base64,{logo_b64}" style="height:60px;margin-bottom:14px">'
+        if logo_b64 else ""
+    )
 
     # CSS só do login
     st.markdown("""
@@ -353,7 +350,7 @@ def _login_simulado():
         font-size: 15px !important;
         font-weight: 600 !important;
         color: #1B3A4B !important;
-        justify-content: flex-start !important;   /* alinha o conteúdo à esquerda */
+        justify-content: flex-start !important;
         text-align: left !important;
         white-space: normal !important;
         line-height: 1.3 !important;
@@ -389,12 +386,13 @@ def _login_simulado():
     <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
                 border:1px solid rgba(245,158,11,0.3);border-radius:8px">
       <div style="font-size:11px;font-weight:600;color:#B45309">🚧 Ambiente de Teste</div>
-      <div style="font-size:11px;color:#92400E;margin-top:2px"> · v0.1-beta</div>
+      <div style="font-size:11px;color:#92400E;margin-top:2px">Dados fictícios · v0.1-beta</div>
     </div>
     <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
       🔒 Login OAuth Google em implementação
     </div>
     """, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------------------------
 # MAIN
