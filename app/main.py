@@ -216,67 +216,40 @@ def _supabase_status() -> tuple[bool, str]:
         return False, "Desligado"
 
 
-# ---------------------------------------------------------------------------
-# SIDEBAR — após login
-# ---------------------------------------------------------------------------
 def _render_sidebar(user: dict):
+    perfil_icons  = {"formador": "👤", "coordenador": "📋", "gestor_projeto": "📊", "financeiro": "💶", "admin": "⚙️"}
+    perfil_labels = {"formador": "Formador", "coordenador": "Coordenador",
+                     "gestor_projeto": "Gestor de Projeto", "financeiro": "Financeiro", "admin": "Administrador"}
+    icon  = perfil_icons.get(user["role"], "👤")
+    label = perfil_labels.get(user["role"], user["role"])
+
     with st.sidebar:
-        st.markdown("""
-        <div style="padding:24px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px">
-          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4) !important;
-                      letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Magna PME</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5) !important">Gestão de Formação</div>
-        </div>
-        """, unsafe_allow_html=True)
+        # Marca
+        st.markdown("### Magna PME")
+        st.caption("Gestão de Formação")
+        st.divider()
 
-        perfil_icons  = {"formador":"👤","coordenador":"📋","gestor_projeto":"📊","financeiro":"💶","admin":"⚙️"}
-        perfil_labels = {"formador":"Formador","coordenador":"Coordenador",
-                         "gestor_projeto":"Gestor de Projeto","financeiro":"Financeiro","admin":"Administrador"}
-        icon  = perfil_icons.get(user["role"], "👤")
-        label = perfil_labels.get(user["role"], user["role"])
+        # Utilizador
+        st.markdown(f"**{icon}  {user['nome']}**")
+        st.caption(label)
+        st.divider()
 
-        st.markdown(f"""
-        <div style="background:rgba(42,122,140,0.2);border:1px solid rgba(42,122,140,0.35);
-                    border-radius:10px;padding:12px 14px;margin-bottom:20px">
-          <div style="font-size:14px;font-weight:600;color:#fff">{icon}&nbsp;&nbsp;{user['nome']}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px">{label}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
+        # Data / hora
         agora = datetime.now()
-        st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,1);margin-bottom:6px;padding:0 2px">
-          📅&nbsp;{agora.strftime("%d %b %Y")}&nbsp;&nbsp;⏰&nbsp;{agora.strftime("%H:%M")}
-        </div>
-        """, unsafe_allow_html=True)
+        st.caption(f"📅 {agora.strftime('%d %b %Y')}  ·  ⏰ {agora.strftime('%H:%M')}")
 
+        # Estado da BD
         sb_ok, sb_label = _supabase_status()
-        sb_color = "#22C55E" if sb_ok else "#F59E0B"
-        st.markdown(f"""
-        <div style="font-size:12px;color:rgba(255,255,255,1);margin-bottom:20px;padding:0 2px">
-          <span style="color:{sb_color}">●</span>&nbsp;BD {sb_label}
-        </div>
-        """, unsafe_allow_html=True)
+        st.caption(f"{'🟢' if sb_ok else '🟠'} BD {sb_label}")
 
+        # Sair
         if st.button("⎋  Sair da sessão", use_container_width=True, key="btn_sair"):
             st.session_state.user = None
             st.rerun()
 
-        st.markdown("""
-        <div style="margin-top:24px;padding:10px 12px;background:rgba(245,158,11,0.15);
-                    border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-          <div style="font-size:11px;font-weight:600;color:#FCD34D">🚧 Ambiente de Teste</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">
-            Dados fictícios · v0.1-beta
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div style="position:fixed;bottom:16px;font-size:10px;color:rgba(255,255,255,0.2)">
-          Mentores & Tutores © 2026
-        </div>
-        """, unsafe_allow_html=True)
+        st.divider()
+        st.caption("🚧 Ambiente de Teste · v0.1-beta")
+        st.caption("Mentores & Tutores © 2026")
 
 
 # ---------------------------------------------------------------------------
@@ -290,7 +263,7 @@ def _banner_teste():
       <span>🚧</span>
       <strong>Ambiente de teste</strong>
       <span style="color:#D97706">—</span>
-      <span>Os dados apresentados são fictícios. Não realizar operações reais nesta versão.</span>
+      <span>Os .</span>
     </div>
     """, unsafe_allow_html=True)
 
