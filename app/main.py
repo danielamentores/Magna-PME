@@ -333,15 +333,12 @@ def _login_simulado():
 
     # Carrega o logo (põe o ficheiro num destes caminhos)
     logo_b64 = ""
-     for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
+     logo_b64 = ""
+    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
         f = Path(caminho)
         if f.exists():
             logo_b64 = base64.b64encode(f.read_bytes()).decode()
             break
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_b64}" style="height:60px;margin-bottom:14px">'
-        if logo_b64 else ""
-    )
 
     # CSS só do login
     st.markdown("""
