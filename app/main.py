@@ -327,7 +327,7 @@ def _login_simulado():
 
     # Carrega o logo (põe o ficheiro num destes caminhos)
     logo_b64 = ""
-    for caminho in ["app/assets/logo.png", "assets/logo.png", "logo.png"]:
+    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
         f = Path(caminho)
         if f.exists():
             logo_b64 = base64.b64encode(f.read_bytes()).decode()
