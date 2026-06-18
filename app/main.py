@@ -271,11 +271,7 @@ def _page_header(user: dict, titulo: str, subtitulo: str = ""):
     st.caption(sub)
     st.divider()
 
-# ---------------------------------------------------------------------------
-# LOGIN
-# ---------------------------------------------------------------------------
 def _login_simulado():
-    import base64
     from pathlib import Path
 
     perfis = {
@@ -285,73 +281,32 @@ def _login_simulado():
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
 
-    # Carrega o logo (põe o ficheiro num destes caminhos)
-    logo_b64 = ""
-    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
-        f = Path(caminho)
-        if f.exists():
-            logo_b64 = base64.b64encode(f.read_bytes()).decode()
-            break
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_b64}" style="height:60px;margin-bottom:14px">'
-        if logo_b64 else ""
-    )
+    # Única CSS do login: esconder a sidebar (é estrutural, não é "estilo")
+    st.markdown('<style>[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
-    # CSS só do login
-    st.markdown("""
-    <style>
-    [data-testid="stSidebar"] { display: none !important; }
-    .main .block-container { max-width: 480px !important; margin: 0 auto !important; padding-top: 5vh !important; }
-    .main .block-container .stButton > button {
-        background: #FFFFFF !important;
-        border: 1px solid #DDE4EA !important;
-        border-radius: 12px !important;
-        padding: 18px 20px !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        color: #1B3A4B !important;
-        justify-content: flex-start !important;   /* alinha o conteúdo à esquerda */
-        text-align: left !important;
-        white-space: normal !important;
-        line-height: 1.3 !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        margin-bottom: 0 !important;
-    }
-    .main .block-container .stButton > button p { text-align: left !important; width: 100% !important; }
-    .main .block-container .stButton > button:hover {
-        border-color: #2A7A8C !important;
-        background: #EBF5F7 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # Centrar numa coluna estreita usando layout nativo (sem CSS de tamanhos)
+    _, centro, _ = st.columns([1, 2, 1])
+    with centro:
+        # Logo
+        logo = next((p for p in ["docs/logo_magna_pme.png", "app/assets/logo.png",
+                                  "app/logo.png", "logo.png"] if Path(p).exists()), None)
+        if logo:
+            st.image(logo, width=140)
 
-    # Marca (logo por cima do nome)
-    st.markdown(f"""
-    <div style="text-align:center;margin-bottom:6px">
-      {logo_html}
-      <div style="font-size:26px;font-weight:800;color:#1B3A4B"></div>
-      <div style="font-size:13px;color:#6B8090">Mentores &amp; Tutores · Gestão de Formação</div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:#6B8090;letter-spacing:.1em;
-                text-transform:uppercase;margin:26px 0 14px">Aceder como</div>
-    """, unsafe_allow_html=True)
+        st.title("Magna PME")
+        st.caption("Mentores & Tutores · Gestão de Formação")
+        st.divider()
+        st.caption("ACEDER COMO")
 
-    for role, info in perfis.items():
-        if st.button(f"{info['icon']}   {info['label']}", key=f"login_{role}", use_container_width=True):
-            st.session_state.user = {"nome": info["nome"], "email": info["email"], "role": role}
-            st.rerun()
-        st.caption(info["desc"])
+        for role, info in perfis.items():
+            if st.button(f"{info['icon']}   {info['label']}", key=f"login_{role}", use_container_width=True):
+                st.session_state.user = {"nome": info["nome"], "email": info["email"], "role": role}
+                st.rerun()
+            st.caption(info["desc"])
 
-    st.markdown("""
-    <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
-                border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-      <div style="font-size:11px;font-weight:600;color:#B45309">🚧 Ambiente de Teste</div>
-      <div style="font-size:11px;color:#92400E;margin-top:2px"> · v0.1-beta</div>
-    </div>
-    <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
-      🔒 Login OAuth Google em implementação
-    </div>
-    """, unsafe_allow_html=True)
+        st.divider()
+        st.warning("🚧 Ambiente de Teste · v0.1-beta")
+        st.caption("🔒 Login OAuth Google em implementação")
 
 # ---------------------------------------------------------------------------
 # MAIN
