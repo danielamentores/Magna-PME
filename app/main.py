@@ -321,17 +321,6 @@ def _login_simulado():
         "gestor_projeto": {"icon": "📊", "label": "Gestor de Projeto", "desc": "Visão Geral e Indicadores de Projetos",                  "nome": "Gestora",     "email": "gestora@demo.pt"},
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
-  # Carrega o logo
-    logo_b64 = ""
-    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
-        f = Path(caminho)
-        if f.exists():
-            logo_b64 = base64.b64encode(f.read_bytes()).decode()
-            break
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_b64}" style="height:60px;margin-bottom:14px">'
-        if logo_b64 else ""
-    )
     # CSS só do login (não afeta o resto da app, porque esta função
     # não corre depois de entrares)
     st.markdown("""
