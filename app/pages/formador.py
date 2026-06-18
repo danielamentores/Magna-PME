@@ -661,6 +661,6 @@ def render(user: dict):
     label_ac =f"📚 Ações{' 🟣' if n_sfat>0 else ''}"
 
     tab1,tab2,tab3=st.tabs(["📤 Submeter fatura",label_fat,label_ac])
-    with tab1: _submeter(user)
+    with tab1: _acoes(user)
     with tab2: _faturas(user)
-    with tab3: _acoes(user)
+    with tab3: _submeter(user)
