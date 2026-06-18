@@ -369,7 +369,7 @@ def _login_simulado():
     st.markdown(f"""
     <div style="text-align:center;margin-bottom:6px">
       {logo_html}
-      <div style="font-size:26px;font-weight:800;color:#1B3A4B">Magna PME</div>
+      <div style="font-size:26px;font-weight:800;color:#1B3A4B"></div>
       <div style="font-size:13px;color:#6B8090">Mentores &amp; Tutores · Gestão de Formação</div>
     </div>
     <div style="font-size:11px;font-weight:600;color:#6B8090;letter-spacing:.1em;
