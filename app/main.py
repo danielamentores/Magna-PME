@@ -315,9 +315,6 @@ def _page_header(user: dict, titulo: str, subtitulo: str = ""):
 # LOGIN
 # ---------------------------------------------------------------------------
 def _login_simulado():
-    import base64
-    from pathlib import Path
-
     perfis = {
         "formador":       {"icon": "👤", "label": "Formador",          "desc": "Submissão de Faturas e Gestão de Ações",                 "nome": "Formadora",   "email": "formadora@demo.pt"},
         "coordenador":    {"icon": "📋", "label": "Coordenador",       "desc": "Gestão de Formandos, Formadores e Execução de Projetos", "nome": "Coordenador", "email": "coordenador@demo.pt"},
@@ -325,19 +322,8 @@ def _login_simulado():
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
 
-    # Carrega o logo
-    logo_b64 = ""
-    for caminho in ["docs/logo_magna_pme.png", "app/assets/logo.png", "app/logo.png", "logo.png"]:
-        f = Path(caminho)
-        if f.exists():
-            logo_b64 = base64.b64encode(f.read_bytes()).decode()
-            break
-    logo_html = (
-        f'<img src="data:image/png;base64,{logo_b64}" style="height:60px;margin-bottom:14px">'
-        if logo_b64 else ""
-    )
-
-    # CSS só do login
+    # CSS só do login (não afeta o resto da app, porque esta função
+    # não corre depois de entrares)
     st.markdown("""
     <style>
     [data-testid="stSidebar"] { display: none !important; }
@@ -350,14 +336,12 @@ def _login_simulado():
         font-size: 15px !important;
         font-weight: 600 !important;
         color: #1B3A4B !important;
-        justify-content: flex-start !important;
         text-align: left !important;
         white-space: normal !important;
         line-height: 1.3 !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-        margin-bottom: 0 !important;
+        margin-bottom: 4px !important;
     }
-    .main .block-container .stButton > button p { text-align: left !important; width: 100% !important; }
     .main .block-container .stButton > button:hover {
         border-color: #2A7A8C !important;
         background: #EBF5F7 !important;
@@ -365,11 +349,9 @@ def _login_simulado():
     </style>
     """, unsafe_allow_html=True)
 
-    # Marca (logo por cima do nome)
-    st.markdown(f"""
+    st.markdown("""
     <div style="text-align:center;margin-bottom:6px">
-      {logo_html}
-      <div style="font-size:26px;font-weight:800;color:#1B3A4B"></div>
+      <div style="font-size:26px;font-weight:800;color:#1B3A4B">Magna PME</div>
       <div style="font-size:13px;color:#6B8090">Mentores &amp; Tutores · Gestão de Formação</div>
     </div>
     <div style="font-size:11px;font-weight:600;color:#6B8090;letter-spacing:.1em;
@@ -385,7 +367,7 @@ def _login_simulado():
     st.markdown("""
     <div style="margin-top:24px;padding:12px 14px;background:rgba(245,158,11,0.12);
                 border:1px solid rgba(245,158,11,0.3);border-radius:8px">
-      <div style="font-size:11px;font-weight:600;color:#B45309">🚧 Ambiente de Teste</div>
+      <div style="font-size:11px;font-weight:600;color:#B45309"> Ambiente de Teste</div>
       <div style="font-size:11px;color:#92400E;margin-top:2px">· v0.1-beta</div>
     </div>
     <div style="text-align:center;font-size:12px;color:#A0B0BC;margin-top:16px">
