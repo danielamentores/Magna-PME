@@ -6,6 +6,7 @@ from app.financeiro.helpers import (
     ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
     guardar_comprovativo, notificar_rejeicao,
     _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
+    marcar_todas_lidas, n_notifs_nao_lidas,
 )
 
 try:
@@ -41,7 +42,7 @@ def _render_notificacoes():
     with col_btn:
         if n_novas > 0:
             if st.button("✓ Marcar todas como lidas", key="notif_lidas", use_container_width=True):
-                _marcar_todas_lidas()
+                marcar_todas_lidas()
                 st.rerun()
 
     if not notifs:
