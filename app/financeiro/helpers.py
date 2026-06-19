@@ -18,6 +18,11 @@ def eur(v):
     try: return f"€\u202f{float(v):,.0f}".replace(",",".")
     except: return "€ —"
 
+def eur2(v):
+    """Com dois decimais."""
+    try: return f"€\u202f{float(v):,.2f}".replace(",","X").replace(".",",").replace("X",".")
+    except: return "€ —"
+
 def ptag(p):
     c=CORES.get(p,"#6B7280"); b=BGS.get(p,"#F3F4F6")
     return f'<span class="fin-ptag" style="background:{b};color:{c}">{p}</span>'
