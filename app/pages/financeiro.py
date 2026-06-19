@@ -13,8 +13,20 @@ except Exception:
 def _init_state():
     if "historico"       not in st.session_state: st.session_state.historico = []
     if "notificacoes"    not in st.session_state:
-        from app.financeiro.notificacoes import _MOCK_NOTIFS
-        st.session_state.notificacoes = list(_MOCK_NOTIFS)
+        st.session_state.notificacoes = [
+            {"id":"n1","tipo":"fatura_formador","titulo":"Nova fatura submetida",
+             "texto":"Miguel Santos submeteu FT2026/0155 (€ 2.400) — MENTORES",
+             "timestamp":"2026-06-15 14:32","lida":False},
+            {"id":"n2","tipo":"fatura_formador","titulo":"Nova fatura submetida",
+             "texto":"Sofia Rodrigues submeteu FT2026/0153 (€ 1.950) — ANIET",
+             "timestamp":"2026-06-14 11:20","lida":False},
+            {"id":"n3","tipo":"fatura_consultor","titulo":"Fatura de consultor recebida",
+             "texto":"Etapas Pioneiras submeteu FT-EC-2026/001 (€ 2.902) com NH associada",
+             "timestamp":"2026-06-13 09:45","lida":False},
+            {"id":"n4","tipo":"fatura_formador","titulo":"Nova fatura submetida",
+             "texto":"Luís Cardoso submeteu FT2026/0150 (€ 1.800) — PRODUTECH",
+             "timestamp":"2026-06-13 08:10","lida":True},
+        ]
     if "comprovativos"   not in st.session_state: st.session_state.comprovativos = {}
     if not SUPABASE_OK:
         from app.financeiro.faturas import _MOCK_PRE, _MOCK_VENC, _MOCK_AV
@@ -43,17 +55,14 @@ def render(user: dict):
     st.markdown(f"# Bem-vindo, {user['nome']}{badge}", unsafe_allow_html=True)
     st.caption("Perfil: Financeiro")
 
-    label_fat   = f"🧾 Faturas ({n_pre})"       if n_pre   > 0 else "🧾 Faturas"
-    label_cons  = f"🤝 Consultores ({n_fc})"     if n_fc    > 0 else "🤝 Consultores"
-    label_notif = f"🔔 Notificações ({n_novas})" if n_novas > 0 else "🔔 Notificações"
+    label_fat  = f"🧾 Faturas ({n_pre})" if n_pre > 0 else "🧾 Faturas"
+    label_cons = f"🤝 Consultores & Ações ({n_fc})" if n_fc > 0 else "🤝 Consultores & Ações"
 
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "📊 Dashboard",
         label_fat,
         label_cons,
-        "📋 Ações",
         "🏢 Faturação Empresas",
-        label_notif,
     ])
 
     with tab1:
@@ -65,17 +74,9 @@ def render(user: dict):
         render_alertas(user)
 
     with tab3:
-        from app.financeiro.consultores import render_consultores_financeiro
-        render_consultores_financeiro(user)
+        from app.financeiro.consultores_acoes import render_consultores_acoes
+        render_consultores_acoes(user)
 
     with tab4:
-        from app.financeiro.acoes import render_acoes
-        render_acoes(user)
-
-    with tab5:
         from app.financeiro.faturacao_empresas import render_faturacao_empresas
         render_faturacao_empresas(user)
-
-    with tab6:
-        from app.financeiro.notificacoes import render_notificacoes
-        render_notificacoes()
