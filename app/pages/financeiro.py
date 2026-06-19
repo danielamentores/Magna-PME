@@ -765,6 +765,40 @@ def render_consultores_financeiro(user):
 def render(user: dict):
     init_state()
 
+    st.html("""
+<style>
+.stTabs [data-baseweb="tab-list"]{gap:2px !important;background:#F4F7F9 !important;border-radius:10px 10px 0 0 !important;padding:5px 6px 0 !important;border:1px solid #DDE4EA !important;border-bottom:none !important;}
+.stTabs [data-baseweb="tab"]{border-radius:7px 7px 0 0 !important;padding:9px 18px !important;font-size:13px !important;font-weight:500 !important;color:#6B8090 !important;background:transparent !important;border:none !important;}
+.stTabs [aria-selected="true"]{background:#FFFFFF !important;color:#1B3A4B !important;font-weight:700 !important;border-bottom:2px solid #2A7A8C !important;}
+.stTabs [data-baseweb="tab-panel"]{background:#FFFFFF !important;border:1px solid #DDE4EA !important;border-top:none !important;border-radius:0 0 10px 10px !important;padding:1.5rem 1.75rem !important;}
+.fin-kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px}
+.fin-kpi{background:#fff;border:1px solid #E4E7EF;border-radius:12px;padding:16px 18px;flex:1;min-width:130px}
+.fin-kpi.r{border-top:3px solid #DC2626}.fin-kpi.a{border-top:3px solid #D97706}.fin-kpi.b{border-top:3px solid #2563EB}.fin-kpi.g{border-top:3px solid #16A34A}.fin-kpi.p{border-top:3px solid #7C3AED}
+.fin-kpi .lbl{font-size:11px;font-weight:600;color:#8B94A3;text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px}
+.fin-kpi .val{font-size:23px;font-weight:700;color:#1A1F2E;margin:0;line-height:1.1}
+.fin-kpi .sub{font-size:12px;color:#8B94A3;margin:3px 0 0}
+.fin-card{background:#fff;border:1px solid #E4E7EF;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.fin-card.vc{border-left:3px solid #DC2626;background:#FEF2F2}.fin-card.av{border-left:3px solid #D97706}
+.fin-card .ct{font-weight:600;font-size:14px;color:#1A1F2E}.fin-card .cm{font-size:12px;color:#8B94A3;margin-top:2px}
+.fin-card .cd{font-size:11px;color:#8B94A3;margin-top:2px}.fin-card .cv{font-weight:700;font-size:15px;color:#1A1F2E;white-space:nowrap}
+.fin-card .dr{font-size:12px;color:#DC2626;margin-top:1px}.fin-card .da{font-size:12px;color:#D97706;margin-top:1px}
+.fin-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.fin-ptag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px}
+.fin-sec{font-size:13px;font-weight:700;color:#4B5263;text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px}
+.fin-secs{font-size:12px;color:#8B94A3;margin:0 0 12px}
+.fin-div{height:1px;background:#E4E7EF;margin:24px 0 20px}
+.fin-warn{background:#FFFBEB;border:1px solid #FCD34D;border-left:3px solid #D97706;border-radius:8px;padding:9px 14px;font-size:13px;color:#92400E;margin-bottom:16px}
+.fin-empty{background:#F7F8FC;border:1px dashed #E4E7EF;border-radius:10px;padding:20px;text-align:center;color:#8B94A3;font-size:13px;margin-bottom:8px}
+.fin-aprov{background:#fff;border:1px solid #E4E7EF;border-radius:10px;padding:14px;margin-bottom:10px}
+.fin-aprov .err{font-size:12px;color:#DC2626;margin-top:3px}.fin-aprov .ds{font-size:11px;color:#8B94A3;margin-top:2px}
+.notif-panel{background:#fff;border:1px solid #E4E7EF;border-radius:12px;margin-bottom:20px;overflow:hidden}
+.notif-item{padding:10px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:flex-start;gap:10px}
+.notif-item:last-child{border-bottom:none}.notif-item.nova{background:#FFFBEB}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#D97706;flex-shrink:0;margin-top:5px}
+.notif-dot.lida{background:#E4E7EF}
+.notif-badge{display:inline-flex;align-items:center;justify-content:center;background:#DC2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px}
+</style>
+""")
 
     # Badge de notificações no título
     n_novas = _n_notifs_nao_lidas()
@@ -784,15 +818,15 @@ def render(user: dict):
         n_fc=len(_get_faturas_consultores_pendentes())
     except: n_fc=0
 
-    label_al   = f"⚠️ Alertas/A Pagar ({n_pre})" if n_pre>0 else "⚠️ Alertas/A Pagar"
-    label_cons = f"🤝 Consultores ({n_fc})" if n_fc>0 else "🤝 Consultores"
-    label_notif= f"🔔 Notificações ({n_novas})" if n_novas>0 else "🔔 Notificações"
+    label_fat   = f"🧾 Faturas ({n_pre})"  if n_pre>0  else "🧾 Faturas"
+    label_cons  = f"🤝 Consultores ({n_fc})" if n_fc>0  else "🤝 Consultores"
+    label_notif = f"🔔 Notificações ({n_novas})" if n_novas>0 else "🔔 Notificações"
 
     tab1,tab2,tab3,tab4,tab5 = st.tabs([
-        "💶 Dashboard",
-        label_al,
+        "📊 Dashboard",
+        label_fat,
         label_cons,
-        "💳 Faturação Empresas",
+        "🏢 Faturação Empresas",
         label_notif,
     ])
 
