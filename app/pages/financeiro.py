@@ -5,6 +5,7 @@ from datetime import date, datetime
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from app import ui
 
 # ---------------------------------------------------------------------------
 # IMPORTS BD
@@ -21,49 +22,6 @@ try:
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
-
-_CSS = """
-<style>
-.fin-kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 24px}
-.fin-kpi{background:#fff;border:1px solid #E4E7EF;border-radius:12px;padding:16px 18px;flex:1;min-width:130px}
-.fin-kpi.r{border-top:3px solid #DC2626}.fin-kpi.a{border-top:3px solid #D97706}
-.fin-kpi.b{border-top:3px solid #2563EB}.fin-kpi.g{border-top:3px solid #16A34A}
-.fin-kpi.p{border-top:3px solid #7C3AED}
-.fin-kpi .lbl{font-size:11px;font-weight:600;color:#8B94A3;text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px}
-.fin-kpi .val{font-size:23px;font-weight:700;color:#1A1F2E;margin:0;line-height:1.1}
-.fin-kpi .sub{font-size:12px;color:#8B94A3;margin:3px 0 0}
-.fin-card{background:#fff;border:1px solid #E4E7EF;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-.fin-card.vc{border-left:3px solid #DC2626;background:#FEF2F2}
-.fin-card.av{border-left:3px solid #D97706}
-.fin-card .ct{font-weight:600;font-size:14px;color:#1A1F2E}
-.fin-card .cm{font-size:12px;color:#8B94A3;margin-top:2px}
-.fin-card .cd{font-size:11px;color:#8B94A3;margin-top:2px}
-.fin-card .cv{font-weight:700;font-size:15px;color:#1A1F2E;white-space:nowrap}
-.fin-card .dr{font-size:12px;color:#DC2626;margin-top:1px}
-.fin-card .da{font-size:12px;color:#D97706;margin-top:1px}
-.fin-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.fin-ptag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px}
-.fin-sec{font-size:13px;font-weight:700;color:#4B5263;text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px}
-.fin-secs{font-size:12px;color:#8B94A3;margin:0 0 12px}
-.fin-div{height:1px;background:#E4E7EF;margin:24px 0 20px}
-.fin-warn{background:#FFFBEB;border:1px solid #FCD34D;border-left:3px solid #D97706;border-radius:8px;padding:9px 14px;font-size:13px;color:#92400E;margin-bottom:16px}
-.fin-empty{background:#F7F8FC;border:1px dashed #E4E7EF;border-radius:10px;padding:20px;text-align:center;color:#8B94A3;font-size:13px;margin-bottom:8px}
-.fin-aprov{background:#fff;border:1px solid #E4E7EF;border-radius:10px;padding:14px;margin-bottom:10px}
-.fin-aprov .err{font-size:12px;color:#DC2626;margin-top:3px}
-.fin-aprov .ds{font-size:11px;color:#8B94A3;margin-top:2px}
-.notif-panel{background:#fff;border:1px solid #E4E7EF;border-radius:12px;margin-bottom:20px;overflow:hidden}
-.notif-header{padding:12px 16px;background:#F7F8FC;border-bottom:1px solid #E4E7EF;font-weight:600;font-size:13px;color:#1A1F2E;display:flex;align-items:center;gap:8px}
-.notif-item{padding:10px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:flex-start;gap:10px}
-.notif-item:last-child{border-bottom:none}
-.notif-item.nova{background:#FFFBEB}
-.notif-item.lida{opacity:.7}
-.notif-dot{width:8px;height:8px;border-radius:50%;background:#D97706;flex-shrink:0;margin-top:4px}
-.notif-dot.lida{background:#E4E7EF}
-.notif-txt{font-size:13px;color:#1A1F2E;flex:1}
-.notif-meta{font-size:11px;color:#8B94A3;margin-top:2px}
-.notif-badge{display:inline-flex;align-items:center;justify-content:center;background:#DC2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px}
-</style>
-"""
 
 # ---------------------------------------------------------------------------
 # MOCK DATA
@@ -104,9 +62,6 @@ _MOCK_NOTIFS = [
 
 PLOTLY_CFG = {"displayModeBar": False}
 ORDEM = ["Data de vencimento","Valor (maior primeiro)","Valor (menor primeiro)","Projeto"]
-CORES = {"MENTORES":"#2563EB","ANIET":"#16A34A","APCMC":"#D97706","APIMA":"#9D174D","PRODUTECH":"#7C3AED","CALÇADO":"#0F766E"}
-BGS   = {"MENTORES":"#EEF3FD","ANIET":"#F0FDF4","APCMC":"#FFFBEB","APIMA":"#FDF2F8","PRODUTECH":"#F5F3FF","CALÇADO":"#F0FDFA"}
-
 # ---------------------------------------------------------------------------
 # HELPERS
 # ---------------------------------------------------------------------------
@@ -121,32 +76,6 @@ def _notificar_rejeicao(email, n_fatura, motivo):
 def _formador(r): return (r.get("profiles") or {}).get("nome") or "—"
 def _projeto(r):  return (r.get("acoes")    or {}).get("nome") or "—"
 def _email(r):    return (r.get("profiles") or {}).get("email") or ""
-
-def eur(v):
-    try: return f"€\u202f{float(v):,.0f}".replace(",",".")
-    except: return "€ —"
-
-def ptag(p):
-    c=CORES.get(p,"#6B7280"); b=BGS.get(p,"#F3F4F6")
-    return f'<span class="fin-ptag" style="background:{b};color:{c}">{p}</span>'
-
-def bdg(estado):
-    M={"submetida":("#FFFBEB","#D97706","Submetida"),"leitura_falhada":("#FEF2F2","#DC2626","Leitura falhada"),
-       "acao_nao_fechada":("#FEF2F2","#DC2626","Ação não fechada"),"aprovada":("#F0FDF4","#16A34A","Aprovada"),
-       "paga":("#EEF3FD","#2563EB","Paga"),"rejeitada":("#F3F4F6","#6B7280","Rejeitada"),
-       "Pendente":("#FFFBEB","#D97706","Pendente"),"Aprovado":("#F0FDF4","#16A34A","Aprovado"),"Pago":("#EEF3FD","#2563EB","Pago")}
-    bg,c,l=M.get(estado,("#F3F4F6","#6B7280",estado))
-    return f'<span class="fin-badge" style="background:{bg};color:{c}">{l}</span>'
-
-def kpi_h(lbl,val,sub,v=""):
-    cls=f"fin-kpi {v}" if v else "fin-kpi"
-    return f'<div class="{cls}"><p class="lbl">{lbl}</p><p class="val">{val}</p><p class="sub">{sub}</p></div>'
-
-def sec(titulo,sub=""):
-    s=f'<p class="fin-secs">{sub}</p>' if sub else ""
-    return f'<p class="fin-sec">{titulo}</p>{s}'
-
-def div(): return '<div class="fin-div"></div>'
 
 def ordenar(d,c):
     if c=="Valor (maior primeiro)": return sorted(d,key=lambda x:x.get("valor") or 0,reverse=True)
@@ -322,7 +251,7 @@ def render_dashboard(user):
         )
 
     if n_pre>0:
-        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>Faturas</strong>.</div>')
+        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>Alertas/A Pagar</strong>.</div>')
 
     st.html(
         '<div class="fin-kpi-row">'
@@ -399,7 +328,7 @@ def _card(row,tipo,idx,user_nome):
                 reg_hist("Marcado pago",n,f,p,v); st.toast(f"{n} marcada como paga."); st.rerun()
 
 # ---------------------------------------------------------------------------
-# TAB 2 — Faturas
+# TAB 2 — ALERTAS
 # ---------------------------------------------------------------------------
 def render_alertas(user):
     user_nome=user.get("nome") or "Financeiro"
@@ -738,7 +667,7 @@ def render_consultores_financeiro(user):
 # ---------------------------------------------------------------------------
 def render(user: dict):
     init_state()
-    st.html(_CSS)
+    st.html(ui.CSS)
 
     # Badge de notificações no título
     n_novas = _n_notifs_nao_lidas()
@@ -758,7 +687,7 @@ def render(user: dict):
         n_fc=len(_get_faturas_consultores_pendentes())
     except: n_fc=0
 
-    label_al   = f"⚠️ Faturas ({n_pre})" if n_pre>0 else "⚠️ Faturas"
+    label_al   = f"⚠️ Alertas/A Pagar ({n_pre})" if n_pre>0 else "⚠️ Alertas/A Pagar"
     label_cons = f"🤝 Consultores ({n_fc})" if n_fc>0 else "🤝 Consultores"
     label_notif= f"🔔 Notificações ({n_novas})" if n_novas>0 else "🔔 Notificações"
 
