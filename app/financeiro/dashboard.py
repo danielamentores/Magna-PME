@@ -6,6 +6,7 @@ from app.financeiro.helpers import (
     ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
     guardar_comprovativo, notificar_rejeicao,
     _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
+    n_notifs_nao_lidas,
 )
 
 try:
@@ -55,7 +56,7 @@ def render_dashboard(user):
         despesa=[{"projeto":k,"valor":v} for k,v in {"MENTORES":52400,"ANIET":38900,"APCMC":27600,"APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}.items()]
 
     # Banner notificações não lidas
-    n_novas = _n_notifs_nao_lidas()
+    n_novas = n_notifs_nao_lidas()
     if n_novas > 0:
         st.html(
             f'<div class="fin-warn" style="cursor:pointer">'
