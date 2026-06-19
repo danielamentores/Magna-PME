@@ -27,7 +27,7 @@ _MOCK_NOTIFS = [
 # ---------------------------------------------------------------------------
 # PAINEL DE NOTIFICAÇÕES
 # ---------------------------------------------------------------------------
-def _render_notificacoes():
+def render_notificacoes():
     notifs = st.session_state.get("notificacoes", [])
     n_novas = len([n for n in notifs if not n.get("lida")])
 
