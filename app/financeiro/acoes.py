@@ -60,6 +60,7 @@ def calc_faturado_empresa(dimensao: str, vol_cert: float,
 # MOCK DATA
 # ---------------------------------------------------------------------------
 _MOCK_ACOES = [
+    # volume_cert = volume_horas * formandos_certificados
     {
         "id": "a1", "codigo": "LIKE GARDEN.2.PCE",
         "nome": "Escalada e desmanche de árvores com motosserra",
@@ -189,13 +190,14 @@ def render_acoes(user: dict):
                  or p in (a.get("nome","")).lower()]
 
     # ── KPIs globais ──
+    def _vol(a): return int(a.get("volume_horas") or 0) * int(a.get("formandos_certificados") or 0)
     total_compete  = sum(calc_compete(
-        a.get("dimensao",""), a.get("formandos_certificados",0),
+        a.get("dimensao",""), _vol(a),
         a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
     total_consultor= sum(calc_consultor(a.get("formandos_certificados",0)) for a in acoes)
     total_formador = sum(a.get("valor_fatura_formador") or 0 for a in acoes)
     total_fat_emp  = sum(calc_faturado_empresa(
-        a.get("dimensao",""), a.get("formandos_certificados",0),
+        a.get("dimensao",""), _vol(a),
         a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
     margem_total   = total_compete - total_consultor - total_formador
 
@@ -230,7 +232,8 @@ def render_acoes(user: dict):
         fc       = int(a.get("formandos_certificados") or 0)
         fd       = int(a.get("formandos_desf") or 0)
         fnd      = int(a.get("formandos_nao_desf") or 0)
-        vol      = fc  # volume certificado = formandos certificados (para Micro/Pequena)
+        ch       = int(a.get("volume_horas") or 0)
+        vol      = ch * fc  # volume certificado = carga_horária × formandos_certificados
         consultor= a.get("consultor_nome") or "—"
         formador = a.get("formador_nome") or "—"
         val_form = a.get("valor_fatura_formador")
@@ -239,6 +242,7 @@ def render_acoes(user: dict):
         v_comp   = calc_compete(dim, vol, fd, fnd)
         v_emp_r  = calc_empresa_recebe(dim, vol, fd, fnd)
         v_fat_e  = calc_faturado_empresa(dim, vol, fd, fnd)
+        # vol já é ch * fc, correto
         margem, m_cor = _margem(v_comp, v_cons, val_form)
 
         with st.container(border=True):
