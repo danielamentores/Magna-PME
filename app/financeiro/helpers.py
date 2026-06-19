@@ -180,3 +180,25 @@ CSS = """
 .notif-badge{display:inline-flex;align-items:center;justify-content:center;background:#DC2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px}
 </style>
 """
+
+def n_notifs_nao_lidas() -> int:
+    return len([n for n in st.session_state.get("notificacoes", []) if not n.get("lida")])
+
+def reg_hist(acao, n, form, proj, val, mot=""):
+    from datetime import datetime
+    entrada = {"timestamp": datetime.now().strftime("%d/%m/%Y %H:%M"),
+               "acao": acao, "n_fatura": n, "formador": form,
+               "projeto": proj, "valor": val, "motivo": mot}
+    st.session_state.setdefault("historico", []).append(entrada)
+    try:
+        from app.db_financeiro import _log_evento
+        _log_evento(tipo=f"financeiro_{acao.lower().replace(' ','_')}",
+                    descricao=f"{acao} — {n} | {form} | {proj} | {eur(val)}" + (f" | {mot}" if mot else ""),
+                    dados=entrada)
+    except Exception:
+        pass
+
+
+def marcar_todas_lidas():
+    for n in st.session_state.get("notificacoes", []):
+        n["lida"] = True
