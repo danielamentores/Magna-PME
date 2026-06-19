@@ -205,7 +205,7 @@ def render_alertas(user):
             if c1.button("← Anterior",key="pv_p",disabled=pv==0): st.session_state.pag_v=pv-1; st.rerun()
             c2.markdown(f"<div style='text-align:center;padding-top:8px'>Página {pv+1}/{tp_}</div>",unsafe_allow_html=True)
             if c3.button("Próxima →",key="pv_n",disabled=pv>=tp_-1): st.session_state.pag_v=pv+1; st.rerun()
-        st.download_button("⬇️ Excel vencidas",excel_bytes(filtro,venc),f"vencidas_{filtro}.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",key="dl_v")
+        st.download_button("⬇️ Excel vencidas",excel_bytes(venc),f"vencidas_{filtro}.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",key="dl_v")
 
     st.html(div())
 
@@ -223,7 +223,7 @@ def render_alertas(user):
             if c1.button("← Anterior",key="pa_p",disabled=pa==0): st.session_state.pag_a=pa-1; st.rerun()
             c2.markdown(f"<div style='text-align:center;padding-top:8px'>Página {pa+1}/{tp_}</div>",unsafe_allow_html=True)
             if c3.button("Próxima →",key="pa_n",disabled=pa>=tp_-1): st.session_state.pag_a=pa+1; st.rerun()
-        st.download_button("⬇️ Excel a vencer",excel_bytes(filtro,av),f"avencer_{filtro}.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",key="dl_a")
+        st.download_button("⬇️ Excel a vencer",excel_bytes(av),f"avencer_{filtro}.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",key="dl_a")
 
     st.html(div())
 
