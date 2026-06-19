@@ -5,7 +5,6 @@ from datetime import date, datetime
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from app import ui
 
 # ---------------------------------------------------------------------------
 # IMPORTS BD
