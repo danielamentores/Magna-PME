@@ -666,7 +666,7 @@ def render_consultores_financeiro(user):
 # ---------------------------------------------------------------------------
 def render(user: dict):
     init_state()
-    st.html(ui.CSS)
+
 
     # Badge de notificações no título
     n_novas = _n_notifs_nao_lidas()
