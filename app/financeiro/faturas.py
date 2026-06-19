@@ -84,31 +84,39 @@ def _card(row,tipo,idx,user_nome):
             f'<div class="cv">{eur(v)}</div>{dias_h}'
             f'</div></div>', unsafe_allow_html=True)
     with col_b:
-        # Comprovativo compacto dentro de um container discreto
-        with st.container():
+        # Botão principal sempre visível
+        if st.button("✓ Marcar pago", key=f"pg_{tipo}_{idx}_{fid}", use_container_width=True,
+                     type="primary"):
+            st.session_state[f"show_comp_{fid}"] = True
+
+        # Uploader só aparece quando se clica em Marcar pago
+        if st.session_state.get(f"show_comp_{fid}"):
             comp = st.file_uploader(
                 "📎 Comprovativo (PDF)",
                 type=["pdf"],
                 key=f"comp_{tipo}_{idx}_{fid}",
                 label_visibility="visible",
             )
-            if st.button("✓ Marcar pago", key=f"pg_{tipo}_{idx}_{fid}", use_container_width=True,
-                         type="primary"):
-                if not comp:
-                    st.warning("Carrega o comprovativo primeiro.")
-                else:
+            if comp:
+                if st.button("✅ Confirmar pagamento", key=f"conf_{tipo}_{idx}_{fid}",
+                             use_container_width=True, type="primary"):
                     guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
                     if SUPABASE_OK:
                         if marcar_paga(fid, user_nome):
                             reg_hist("Marcado pago", n, f, p, v)
+                            st.session_state.pop(f"show_comp_{fid}", None)
                             st.toast(f"{n} paga. Comprovativo guardado.")
                             st.rerun()
                     else:
                         key = "mock_venc" if tipo == "vencida" else "mock_av"
                         st.session_state[key] = [x for x in st.session_state[key] if x.get("id") != fid]
                         reg_hist("Marcado pago", n, f, p, v)
+                        st.session_state.pop(f"show_comp_{fid}", None)
                         st.toast(f"{n} paga. Comprovativo guardado.")
                         st.rerun()
+            if st.button("✖ Cancelar", key=f"canc_{tipo}_{idx}_{fid}", use_container_width=True):
+                st.session_state.pop(f"show_comp_{fid}", None)
+                st.rerun()
 
 # ---------------------------------------------------------------------------
 # TAB 2 — ALERTAS
