@@ -39,6 +39,32 @@ _MOCK_DESPESA = {"MENTORES":52400,"ANIET":38900,"APCMC":27600,
 # TAB 1 — DASHBOARD
 # ---------------------------------------------------------------------------
 def render_dashboard(user):
+    # Painel de notificações no topo (se houver novas)
+    notifs = st.session_state.get("notificacoes", [])
+    novas = [n for n in notifs if not n.get("lida")]
+    if novas:
+        with st.expander(f"🔔 {len(novas)} notificação(ões) não lida(s)", expanded=True):
+            for n in novas[:5]:  # máx 5 no dashboard
+                tipo_ico = "📄" if n.get("tipo") == "fatura_formador" else "🤝"
+                st.html(
+                    f'<div style="display:flex;align-items:flex-start;gap:10px;'
+                    f'padding:8px 0;border-bottom:1px solid #F0F2F5">'
+                    f'<div style="width:8px;height:8px;border-radius:50%;background:#D97706;'
+                    f'flex-shrink:0;margin-top:5px"></div>'
+                    f'<div style="flex:1">'
+                    f'<div style="font-size:13px;font-weight:600;color:#1A1F2E">'
+                    f'{tipo_ico} {n["titulo"]}</div>'
+                    f'<div style="font-size:12px;color:#4B5263;margin-top:2px">{n["texto"]}</div>'
+                    f'<div style="font-size:11px;color:#8B94A3;margin-top:2px">{n["timestamp"]}</div>'
+                    f'</div></div>'
+                )
+            col_btn, _ = st.columns([2, 4])
+            with col_btn:
+                if st.button("✓ Marcar todas como lidas", key="dash_notif_lidas"):
+                    from app.financeiro.helpers import marcar_todas_lidas
+                    marcar_todas_lidas()
+                    st.rerun()
+
     if SUPABASE_OK:
         m=get_metricas_dashboard()
         recentes=get_faturas_recentes(8)
