@@ -322,7 +322,7 @@ def render_dashboard(user):
         )
 
     if n_pre>0:
-        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>Alertas/A Pagar</strong>.</div>')
+        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>Faturas</strong>.</div>')
 
     st.html(
         '<div class="fin-kpi-row">'
@@ -399,7 +399,7 @@ def _card(row,tipo,idx,user_nome):
                 reg_hist("Marcado pago",n,f,p,v); st.toast(f"{n} marcada como paga."); st.rerun()
 
 # ---------------------------------------------------------------------------
-# TAB 2 — ALERTAS
+# TAB 2 — Faturas
 # ---------------------------------------------------------------------------
 def render_alertas(user):
     user_nome=user.get("nome") or "Financeiro"
@@ -758,7 +758,7 @@ def render(user: dict):
         n_fc=len(_get_faturas_consultores_pendentes())
     except: n_fc=0
 
-    label_al   = f"⚠️ Alertas/A Pagar ({n_pre})" if n_pre>0 else "⚠️ Alertas/A Pagar"
+    label_al   = f"⚠️ Faturas ({n_pre})" if n_pre>0 else "⚠️ Faturas"
     label_cons = f"🤝 Consultores ({n_fc})" if n_fc>0 else "🤝 Consultores"
     label_notif= f"🔔 Notificações ({n_novas})" if n_novas>0 else "🔔 Notificações"
 
