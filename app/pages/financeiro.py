@@ -183,6 +183,34 @@ def init_state():
         if "mock_venc" not in st.session_state: st.session_state.mock_venc=list(_MOCK_VENC)
         if "mock_av"   not in st.session_state: st.session_state.mock_av=list(_MOCK_AV)
 
+def _guardar_comprovativo(fatura_id: str, ficheiro_bytes: bytes, nome_fich: str, user_nome: str) -> str | None:
+    """Guarda comprovativo no Supabase Storage. Retorna URL ou None."""
+    if not SUPABASE_OK:
+        # Mock — guarda em session_state
+        if "comprovativos" not in st.session_state:
+            st.session_state.comprovativos = {}
+        st.session_state.comprovativos[fatura_id] = {
+            "nome": nome_fich,
+            "guardado_em": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "guardado_por": user_nome,
+        }
+        return None
+    try:
+        from app.db_financeiro import get_supabase
+        sb = get_supabase()
+        path = f"comprovativos/{fatura_id}/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{nome_fich}"
+        sb.storage.from_("faturas").upload(
+            path, ficheiro_bytes,
+            file_options={"content-type": "application/pdf"}
+        )
+        url = sb.storage.from_("faturas").get_public_url(path)
+        # Guardar referência na BD
+        sb.table("faturas").update({"comprovativo_url": url}).eq("id", fatura_id).execute()
+        return url
+    except Exception:
+        return None
+
+
 def reg_hist(acao,n,form,proj,val,mot=""):
     entrada={"timestamp":datetime.now().strftime("%d/%m/%Y %H:%M"),
              "acao":acao,"n_fatura":n,"formador":form,"projeto":proj,"valor":val,"motivo":mot}
@@ -360,13 +388,24 @@ def _card(row,tipo,idx,user_nome):
     with col_c:
         st.markdown(f'<div class="{cls}"><div style="flex:1"><div class="ct">{n} <span style="font-size:12px;font-weight:400;color:#8B94A3">{f}</span></div><div class="cm">{ptag(p)}</div><div class="cd">Emissão {df} · Prazo {dp}</div></div><div style="text-align:right;min-width:85px"><div class="cv">{eur(v)}</div>{dias_h}</div></div>',unsafe_allow_html=True)
     with col_b:
+        comp=st.file_uploader("",type=["pdf"],key=f"comp_{tipo}_{idx}_{fid}",
+                              label_visibility="collapsed",help="Comprovativo de pagamento (PDF)")
         if st.button("✓ Marcar pago",key=f"pg_{tipo}_{idx}_{fid}",use_container_width=True):
-            if SUPABASE_OK:
-                if marcar_paga(fid,user_nome): reg_hist("Marcado pago",n,f,p,v); st.toast(f"{n} marcada como paga."); st.rerun()
+            if not comp:
+                st.warning("Carrega o comprovativo de pagamento.")
             else:
-                key="mock_venc" if tipo=="vencida" else "mock_av"
-                st.session_state[key]=[x for x in st.session_state[key] if x.get("id")!=fid]
-                reg_hist("Marcado pago",n,f,p,v); st.toast(f"{n} marcada como paga."); st.rerun()
+                comp_url=_guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
+                if SUPABASE_OK:
+                    if marcar_paga(fid,user_nome):
+                        reg_hist("Marcado pago",n,f,p,v)
+                        st.toast(f"{n} marcada como paga. Comprovativo guardado.")
+                        st.rerun()
+                else:
+                    key="mock_venc" if tipo=="vencida" else "mock_av"
+                    st.session_state[key]=[x for x in st.session_state[key] if x.get("id")!=fid]
+                    reg_hist("Marcado pago",n,f,p,v)
+                    st.toast(f"{n} marcada como paga. Comprovativo guardado.")
+                    st.rerun()
 
 # ---------------------------------------------------------------------------
 # TAB 2 — ALERTAS
@@ -538,6 +577,15 @@ def render_alertas(user):
     st.html(div())
 
     # Histórico
+    # Comprovativos guardados nesta sessão
+    comps=st.session_state.get("comprovativos",{})
+    if comps:
+        st.html(
+            f'<div class="fin-warn" style="background:#EEF3FD;border-color:#2563EB;color:#1e40af">' 
+            f'📎 <strong>{len(comps)} comprovativo(s)</strong> guardado(s) nesta sessão.' 
+            f'</div>'
+        )
+
     st.markdown(sec("📋 Histórico de ações"),unsafe_allow_html=True)
     hist=st.session_state.historico[::-1]
     if hist:
@@ -634,8 +682,16 @@ def render_consultores_financeiro(user):
                 st.markdown("</div>",unsafe_allow_html=True)
             with ca:
                 st.markdown("<div style='margin-top:10px'>",unsafe_allow_html=True)
+                comp_fc=st.file_uploader("",type=["pdf"],key=f"comp_fc_{i}_{fid}",
+                                        label_visibility="collapsed",help="Comprovativo (PDF)")
                 if st.button("✅ Aprovar",key=f"afc_{i}_{fid}",use_container_width=True):
-                    if _aprovar_fc(fid,user_nome): st.toast(f"Fatura de {cn} aprovada."); st.rerun()
+                    if not comp_fc:
+                        st.warning("Carrega o comprovativo.")
+                    else:
+                        _guardar_comprovativo(fid, comp_fc.getvalue(), comp_fc.name, user_nome)
+                        if _aprovar_fc(fid,user_nome):
+                            st.toast(f"Fatura de {cn} aprovada. Comprovativo guardado.")
+                            st.rerun()
                 mot = st.text_input("",key=f"mfc_{i}_{fid}",placeholder="Motivo de rejeição…",label_visibility="collapsed")
                 if st.button("❌ Rejeitar",key=f"rfc_{i}_{fid}",use_container_width=True):
                     if mot:
