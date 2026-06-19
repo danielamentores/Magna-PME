@@ -8,21 +8,15 @@ from app.financeiro.helpers import (
     _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
 )
 
+from datetime import datetime
+
 try:
-    from app.db_financeiro import get_supabase
+    from app.db_financeiro import get_supabase, get_supabase_admin, _log_evento
     get_supabase()
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
 
-from datetime import datetime
-
-try:
-    from app.db_financeiro import get_supabase_admin, _log_evento
-except Exception:
-    pass
-
-"""Tab Consultores — página do financeiro."""
 
 
 try:
