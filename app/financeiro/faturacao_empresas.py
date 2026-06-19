@@ -388,7 +388,7 @@ def render_faturacao_empresas(user: dict):
                     st.markdown(
                         f'<div style="text-align:right;padding-top:6px">'
                         f'<div style="font-weight:700;font-size:16px">{eur(valor)}</div>'
-                        f'{bdg_estado(estado)}'
+                        f'{bdg(estado)}'
                         f'</div>', unsafe_allow_html=True
                     )
 
