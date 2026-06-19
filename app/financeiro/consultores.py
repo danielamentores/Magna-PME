@@ -4,7 +4,7 @@ import streamlit as st
 from app.financeiro.helpers import (
     eur, ptag, bdg, kpi_h, sec, div, CORES, BGS,
     ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
-    guardar_comprovativo, notificar_rejeicao,
+    guardar_comprovativo, notificar_rejeicao, reg_hist,
     _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
 )
 
@@ -508,7 +508,7 @@ def render_consultores_financeiro(user):
                     if not comp_fc:
                         st.warning("Carrega o comprovativo.")
                     else:
-                        _guardar_comprovativo(fid, comp_fc.getvalue(), comp_fc.name, user_nome)
+                        guardar_comprovativo(fid, comp_fc.getvalue(), comp_fc.name, user_nome)
                         if _aprovar_fc(fid,user_nome):
                             st.toast(f"Fatura de {cn} aprovada. Comprovativo guardado.")
                             st.rerun()
