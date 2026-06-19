@@ -422,7 +422,7 @@ def render_consultores_financeiro(user):
     user_nome = user.get("nome") or "Financeiro"
 
     try:
-        from app.financeiro_consultores import (
+        from app.financeiro.consultores import (
             _get_cons, _get_nh, _get_faturas_consultores_pendentes,
             _aprovar_fc, _rejeitar_fc, _get_form_acao, _get_acoes_por_consultor,
         )
@@ -557,7 +557,7 @@ def render_consultores_financeiro(user):
                 )
                 rows_html = ""
                 for r in registos:
-                    from app.financeiro_consultores import bdg as cons_bdg, ptag as cons_ptag
+                    from app.financeiro.helpers import bdg as cons_bdg, ptag as cons_ptag
                     nf_txt = r["n_fatura"] if r["n_fatura"] else "—"
                     rows_html += (
                         f'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;'
