@@ -39,6 +39,13 @@ _MOCK_DESPESA = {"MENTORES":52400,"ANIET":38900,"APCMC":27600,
 # TAB 1 — DASHBOARD
 # ---------------------------------------------------------------------------
 def render_dashboard(user):
+    # Filtro de período
+    col_per, _ = st.columns([2, 4])
+    with col_per:
+        periodo = st.selectbox("Período", ["Tudo", "Este mês", "Mês anterior", "Este ano"],
+                               key="dash_periodo", label_visibility="visible")
+    st.html('<div style="height:8px"></div>')
+
     # Painel de notificações no topo (se houver novas)
     notifs = st.session_state.get("notificacoes", [])
     novas = [n for n in notifs if not n.get("lida")]
@@ -142,3 +149,16 @@ def render_dashboard(user):
         yaxis=dict(showgrid=False,tickfont=dict(size=13)),
         paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)")
     st.plotly_chart(fig2,use_container_width=True,config=PLOTLY_CFG)
+
+    st.html(div())
+    st.markdown(sec("⬇️ Exportação global"), unsafe_allow_html=True)
+    col_e1, col_e2, col_e3 = st.columns(3)
+    with col_e1:
+        if st.button("📊 Exportar todas as faturas", use_container_width=True, key="exp_fat"):
+            st.toast("Exportação disponível quando a BD estiver ligada.")
+    with col_e2:
+        if st.button("🤝 Exportar consultores", use_container_width=True, key="exp_cons"):
+            st.toast("Exportação disponível quando a BD estiver ligada.")
+    with col_e3:
+        if st.button("🏢 Exportar faturação empresas", use_container_width=True, key="exp_emp"):
+            st.toast("Exportação disponível quando a BD estiver ligada.")
