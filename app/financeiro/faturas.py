@@ -70,28 +70,45 @@ def _card(row,tipo,idx,user_nome):
     else:
         dias=row.get("dias") or 0; cls="fin-card av"
         dias_h=f'<div class="da">vence em {dias} dias</div>'
-    col_c,col_b=st.columns([5,2])
+    # Card + acções na mesma linha
+    col_c, col_b = st.columns([5, 2])
     with col_c:
-        st.markdown(f'<div class="{cls}"><div style="flex:1"><div class="ct">{n} <span style="font-size:12px;font-weight:400;color:#8B94A3">{f}</span></div><div class="cm">{ptag(p)}</div><div class="cd">Emissão {df} · Prazo {dp}</div></div><div style="text-align:right;min-width:85px"><div class="cv">{eur(v)}</div>{dias_h}</div></div>',unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="{cls}">'
+            f'<div style="flex:1">'
+            f'<div class="ct">{n} <span style="font-size:12px;font-weight:400;color:#8B94A3">{f}</span></div>'
+            f'<div class="cm">{ptag(p)}</div>'
+            f'<div class="cd">Emissão {df} · Prazo {dp}</div>'
+            f'</div>'
+            f'<div style="text-align:right;min-width:85px">'
+            f'<div class="cv">{eur(v)}</div>{dias_h}'
+            f'</div></div>', unsafe_allow_html=True)
     with col_b:
-        comp=st.file_uploader("",type=["pdf"],key=f"comp_{tipo}_{idx}_{fid}",
-                              label_visibility="collapsed",help="Comprovativo de pagamento (PDF)")
-        if st.button("✓ Marcar pago",key=f"pg_{tipo}_{idx}_{fid}",use_container_width=True):
-            if not comp:
-                st.warning("Carrega o comprovativo de pagamento.")
-            else:
-                comp_url=guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
-                if SUPABASE_OK:
-                    if marcar_paga(fid,user_nome):
-                        reg_hist("Marcado pago",n,f,p,v)
-                        st.toast(f"{n} marcada como paga. Comprovativo guardado.")
-                        st.rerun()
+        # Comprovativo compacto dentro de um container discreto
+        with st.container():
+            comp = st.file_uploader(
+                "📎 Comprovativo (PDF)",
+                type=["pdf"],
+                key=f"comp_{tipo}_{idx}_{fid}",
+                label_visibility="visible",
+            )
+            if st.button("✓ Marcar pago", key=f"pg_{tipo}_{idx}_{fid}", use_container_width=True,
+                         type="primary"):
+                if not comp:
+                    st.warning("Carrega o comprovativo primeiro.")
                 else:
-                    key="mock_venc" if tipo=="vencida" else "mock_av"
-                    st.session_state[key]=[x for x in st.session_state[key] if x.get("id")!=fid]
-                    reg_hist("Marcado pago",n,f,p,v)
-                    st.toast(f"{n} marcada como paga. Comprovativo guardado.")
-                    st.rerun()
+                    guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
+                    if SUPABASE_OK:
+                        if marcar_paga(fid, user_nome):
+                            reg_hist("Marcado pago", n, f, p, v)
+                            st.toast(f"{n} paga. Comprovativo guardado.")
+                            st.rerun()
+                    else:
+                        key = "mock_venc" if tipo == "vencida" else "mock_av"
+                        st.session_state[key] = [x for x in st.session_state[key] if x.get("id") != fid]
+                        reg_hist("Marcado pago", n, f, p, v)
+                        st.toast(f"{n} paga. Comprovativo guardado.")
+                        st.rerun()
 
 # ---------------------------------------------------------------------------
 # TAB 2 — ALERTAS
@@ -151,33 +168,42 @@ def render_alertas(user):
             f=_formador(row); em=_email(row); p=_projeto(row); v=row.get("valor") or 0
             erro=row.get("erro_leitura") or row.get("notas") or "—"
             ds=str(row.get("created_at") or "—")[:10]; fich=row.get("ficheiro_url")
-            col_i,col_pdf,col_a=st.columns([5,1,3])
+            col_i, col_a = st.columns([5, 3])
             with col_i:
-                st.markdown(f'<div class="fin-aprov"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-weight:700;font-size:14px">{n}</span>{ptag(p)}</div><div style="font-size:13px;color:#4B5263"><b>Formador:</b> {f} · <b>Valor:</b> {eur(v)}</div><div class="err">⚠️ {erro}</div><div class="ds">Submetida: {ds}</div></div>',unsafe_allow_html=True)
-            with col_pdf:
-                st.markdown("<div style='margin-top:10px'>",unsafe_allow_html=True)
-                if fich: st.link_button("📄",fich)
-                else: st.caption("—")
-                st.markdown("</div>",unsafe_allow_html=True)
+                pdf_link = f'&nbsp;<a href="{fich}" target="_blank" style="font-size:12px;color:#2A7A8C">📄 Ver PDF</a>' if fich else ""
+                st.markdown(
+                    f'<div class="fin-aprov">'
+                    f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+                    f'<span style="font-weight:700;font-size:14px">{n}</span>{ptag(p)}{pdf_link}'
+                    f'</div>'
+                    f'<div style="font-size:13px;color:#4B5263"><b>Formador:</b> {f} &nbsp;·&nbsp; <b>Valor:</b> {eur(v)}</div>'
+                    f'<div class="err">⚠️ {erro}</div>'
+                    f'<div class="ds">Submetida: {ds}</div>'
+                    f'</div>', unsafe_allow_html=True)
             with col_a:
-                st.markdown("<div style='margin-top:10px'>",unsafe_allow_html=True)
-                if st.button("✅ Aprovar",key=f"ap_{i}_{fid}",use_container_width=True):
+                if st.button("✅ Aprovar", key=f"ap_{i}_{fid}", use_container_width=True, type="primary"):
                     if SUPABASE_OK:
-                        if aprovar_fatura(fid,user_nome): reg_hist("Aprovado",n,f,p,v); st.toast(f"{n} aprovada."); st.rerun()
+                        if aprovar_fatura(fid, user_nome):
+                            reg_hist("Aprovado", n, f, p, v); st.toast(f"{n} aprovada."); st.rerun()
                     else:
-                        st.session_state.mock_pre=[x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                        reg_hist("Aprovado",n,f,p,v); st.toast(f"{n} aprovada."); st.rerun()
-                mot=st.text_input("",key=f"mt_{i}_{fid}",placeholder="Motivo de rejeição…",label_visibility="collapsed")
-                if st.button("❌ Rejeitar",key=f"rj_{i}_{fid}",use_container_width=True):
+                        st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id") != fid]
+                        reg_hist("Aprovado", n, f, p, v); st.toast(f"{n} aprovada."); st.rerun()
+                mot = st.text_input("", key=f"mt_{i}_{fid}", placeholder="Motivo de rejeição…",
+                                    label_visibility="collapsed")
+                if st.button("❌ Rejeitar", key=f"rj_{i}_{fid}", use_container_width=True):
                     if mot:
                         if SUPABASE_OK:
-                            if rejeitar_fatura(fid,mot,user_nome):
-                                reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                            if rejeitar_fatura(fid, mot, user_nome):
+                                reg_hist("Rejeitado", n, f, p, v, mot)
+                                notificar_rejeicao(em, n, mot)
+                                st.toast(f"{n} rejeitada."); st.rerun()
                         else:
-                            st.session_state.mock_pre=[x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                            reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
-                    else: st.warning("Escreve um motivo.")
-                st.markdown("</div>",unsafe_allow_html=True)
+                            st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id") != fid]
+                            reg_hist("Rejeitado", n, f, p, v, mot)
+                            notificar_rejeicao(em, n, mot)
+                            st.toast(f"{n} rejeitada."); st.rerun()
+                    else:
+                        st.warning("Escreve um motivo.")
 
     with st.expander("📤 Ler fatura PDF manualmente"):
         up=st.file_uploader("PDF",type=["pdf"],key="pdf_up")
