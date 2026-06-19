@@ -301,16 +301,27 @@ def render_alertas(user):
     st.html(div())
 
     # Histórico
-    # Comprovativos guardados nesta sessão
-    comps=st.session_state.get("comprovativos",{})
+    # Comprovativos
+    comps = st.session_state.get("comprovativos", {})
     if comps:
-        st.html(
-            f'<div class="fin-warn" style="background:#EEF3FD;border-color:#2563EB;color:#1e40af">' 
-            f'📎 <strong>{len(comps)} comprovativo(s)</strong> guardado(s) nesta sessão.' 
-            f'</div>'
-        )
+        st.html(div())
+        st.markdown(sec(f"📎 Comprovativos guardados ({len(comps)})"), unsafe_allow_html=True)
+        for fid, comp in comps.items():
+            url  = comp.get("url")
+            nome = comp.get("nome", "—")
+            quando = comp.get("guardado_em", "—")
+            por    = comp.get("guardado_por", "—")
+            link = f'<a href="{url}" target="_blank" style="color:#2A7A8C;font-size:12px">📄 Abrir PDF</a>' if url else '<span style="font-size:12px;color:#8B94A3">Guardado localmente</span>'
+            st.html(
+                f'<div class="fin-card">'
+                f'<div style="flex:1">'
+                f'<div style="font-weight:600;font-size:13px">{nome}</div>'
+                f'<div style="font-size:12px;color:#8B94A3">Fatura: {fid} · {quando} · por {por}</div>'
+                f'</div>{link}</div>'
+            )
 
-    st.markdown(sec("📋 Histórico de ações"),unsafe_allow_html=True)
+    st.html(div())
+    st.markdown(sec("📋 Histórico de ações"), unsafe_allow_html=True)
     hist=st.session_state.historico[::-1]
     if hist:
         df=pd.DataFrame(hist)
