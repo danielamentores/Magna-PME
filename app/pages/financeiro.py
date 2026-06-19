@@ -6,6 +6,48 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+CORES = {"MENTORES":"#2563EB","ANIET":"#16A34A","APCMC":"#D97706",
+         "APIMA":"#9D174D","PRODUTECH":"#7C3AED","CALÇADO":"#0F766E"}
+BGS   = {"MENTORES":"#EEF3FD","ANIET":"#F0FDF4","APCMC":"#FFFBEB",
+         "APIMA":"#FDF2F8","PRODUTECH":"#F5F3FF","CALÇADO":"#F0FDFA"}
+
+def eur(v):
+    try: return f"\u20ac\u202f{float(v):,.0f}".replace(",",".")
+    except: return "\u20ac \u2014"
+
+def ptag(p):
+    c=CORES.get(p,"#6B7280"); b=BGS.get(p,"#F3F4F6")
+    return (f'<span class="fin-ptag" style="background:{b};color:{c}">{p}</span>')
+
+def bdg(estado):
+    M={"submetida":("#FFFBEB","#D97706","Submetida"),
+       "leitura_falhada":("#FEF2F2","#DC2626","Leitura falhada"),
+       "acao_nao_fechada":("#FEF2F2","#DC2626","A\u00e7\u00e3o n\u00e3o fechada"),
+       "aprovada":("#F0FDF4","#16A34A","Aprovada"),
+       "paga":("#F0FDF4","#16A34A","Paga"),
+       "rejeitada":("#F3F4F6","#6B7280","Rejeitada"),
+       "Pendente":("#FFFBEB","#D97706","Pendente"),
+       "Aprovado":("#F0FDF4","#16A34A","Aprovado"),
+       "Pago":("#EEF3FD","#2563EB","Pago"),}
+    bg,c,l=M.get(estado,("#F3F4F6","#6B7280",estado))
+    return f'<span class="fin-badge" style="background:{bg};color:{c}">{l}</span>'
+
+def kpi_h(lbl,val,sub,v=""):
+    cor={"r":"#DC2626","a":"#D97706","b":"#2563EB","g":"#16A34A","p":"#7C3AED"}.get(v,"")
+    bord=f"border-top:3px solid {cor}" if cor else ""
+    return (f'<div class="fin-kpi" style="{bord}">'
+            f'<p class="lbl">{lbl}</p>'
+            f'<p class="val">{val}</p>'
+            f'<p class="sub">{sub}</p></div>')
+
+def sec(titulo,sub=""):
+    s=f'<p class="fin-secs">{sub}</p>' if sub else ""
+    return f'<p class="fin-sec">{titulo}</p>{s}'
+
+def div():
+    return '<div class="fin-div"></div>'
+
+
 # ---------------------------------------------------------------------------
 # IMPORTS BD
 # ---------------------------------------------------------------------------
