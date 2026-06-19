@@ -479,39 +479,56 @@ def render_consultores_financeiro(user):
             if isinstance(nh_assoc,dict):
                 nh_txt = f'<div style="font-size:12px;color:#2563EB;margin-top:3px">📄 NH associada: {nh_assoc.get("valor","—")} € — emitida pela gestora em {str(nh_assoc.get("data_emissao") or nh_assoc.get("created_at","—"))[:10]}</div>'
 
-            ci,cpdf,ca = st.columns([4,1,3])
+            ci, ca = st.columns([5, 3])
             with ci:
+                pdf_link = f'&nbsp;<a href="{fich}" target="_blank" style="font-size:12px;color:#2A7A8C">📄 Ver PDF</a>' if fich else ""
                 st.html(
                     f'<div class="fin-aprov">'
-                    f'<div style="font-weight:700;font-size:14px">{cn} <span style="font-size:12px;font-weight:400;color:#8B94A3">{nf}</span></div>'
+                    f'<div style="font-weight:700;font-size:14px">{cn}'
+                    f'&nbsp;<span style="font-size:12px;font-weight:400;color:#8B94A3">{nf}</span>'
+                    f'{pdf_link}</div>'
                     f'<div style="font-size:13px;color:#4B5263">{ptag(pr)} · {eur(v)}</div>'
                     f'<div style="font-size:11px;color:#8B94A3;margin-top:2px">Submetida: {ds}</div>'
                     f'{nh_txt}'
                     f'</div>'
                 )
-            with cpdf:
-                st.markdown("<div style='margin-top:10px'>",unsafe_allow_html=True)
-                if fich: st.link_button("📄",fich)
-                else: st.caption("—")
-                st.markdown("</div>",unsafe_allow_html=True)
             with ca:
-                st.markdown("<div style='margin-top:10px'>",unsafe_allow_html=True)
-                comp_fc=st.file_uploader("",type=["pdf"],key=f"comp_fc_{i}_{fid}",
-                                        label_visibility="collapsed",help="Comprovativo (PDF)")
-                if st.button("✅ Aprovar",key=f"afc_{i}_{fid}",use_container_width=True):
-                    if not comp_fc:
-                        st.warning("Carrega o comprovativo.")
-                    else:
-                        guardar_comprovativo(fid, comp_fc.getvalue(), comp_fc.name, user_nome)
-                        if _aprovar_fc(fid,user_nome):
-                            st.toast(f"Fatura de {cn} aprovada. Comprovativo guardado.")
+                show_key = f"show_comp_fc_{i}_{fid}"
+                if not st.session_state.get(show_key):
+                    if st.button("✅ Aprovar", key=f"afc_{i}_{fid}",
+                                 use_container_width=True, type="primary"):
+                        st.session_state[show_key] = True
+                        st.rerun()
+                else:
+                    comp_fc = st.file_uploader(
+                        "📎 Comprovativo (PDF)",
+                        type=["pdf"],
+                        key=f"comp_fc_{i}_{fid}",
+                    )
+                    col_ok, col_x = st.columns([3, 1])
+                    with col_ok:
+                        if st.button("✅ Confirmar", key=f"conf_fc_{i}_{fid}",
+                                     use_container_width=True, type="primary",
+                                     disabled=comp_fc is None):
+                            guardar_comprovativo(fid, comp_fc.getvalue(), comp_fc.name, user_nome)
+                            if _aprovar_fc(fid, user_nome):
+                                st.session_state.pop(show_key, None)
+                                st.toast(f"Fatura de {cn} aprovada.")
+                                st.rerun()
+                    with col_x:
+                        if st.button("✖", key=f"canc_fc_{i}_{fid}", use_container_width=True):
+                            st.session_state.pop(show_key, None)
                             st.rerun()
-                mot = st.text_input("",key=f"mfc_{i}_{fid}",placeholder="Motivo de rejeição…",label_visibility="collapsed")
-                if st.button("❌ Rejeitar",key=f"rfc_{i}_{fid}",use_container_width=True):
+                mot = st.text_input("", key=f"mfc_{i}_{fid}",
+                                    placeholder="Motivo de rejeição…",
+                                    label_visibility="collapsed")
+                if st.button("❌ Rejeitar", key=f"rfc_{i}_{fid}", use_container_width=True):
                     if mot:
-                        if _rejeitar_fc(fid,mot,user_nome): st.toast(f"Fatura de {cn} rejeitada."); st.rerun()
-                    else: st.warning("Escreve um motivo.")
-                st.markdown("</div>",unsafe_allow_html=True)
+                        if _rejeitar_fc(fid, mot, user_nome):
+                            st.toast(f"Fatura de {cn} rejeitada.")
+                            st.rerun()
+                    else:
+                        st.warning("Escreve um motivo.")
 
     st.html(div())
 
