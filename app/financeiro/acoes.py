@@ -16,28 +16,29 @@ except Exception:
 # ---------------------------------------------------------------------------
 # FÓRMULAS FINANCEIRAS
 # ---------------------------------------------------------------------------
-def calc_consultor(formandos_cert: int) -> float:
-    """Valor da NH do consultor."""
-    if not formandos_cert:
+def calc_consultor(formandos_cert: int, vol_cert: float) -> float:
+    """Valor da NH do consultor = volume_certificado × taxa."""
+    if not vol_cert:
         return 0.0
     taxa = 3.12 if formandos_cert >= 13 else 2.50
-    return round(formandos_cert * taxa, 2)
+    return round(vol_cert * taxa, 2)
 
-def calc_compete(dimensao: str, vol_cert: float,
-                 form_desf: int = 0, form_nao_desf: int = 0) -> float:
-    """Valor que a MENTORES recebe do COMPETE."""
-    if not dimensao:
+def calc_compete(projeto: str, vol_cert: float) -> float:
+    """Valor que a MENTORES recebe do COMPETE.
+    MENTORES: vol_cert × 7,12
+    Outros:   0,5 × vol_cert × 7,12 + 0,5 × vol_cert × 5,00
+    """
+    if not vol_cert:
         return 0.0
-    if dimensao in ("Pequena", "Micro"):
-        return round(0.7 * 7.12 * vol_cert, 2)
-    elif dimensao == "Média":
-        return round((0.7 * 7.12 * form_desf) + (0.6 * 7.12 * form_nao_desf), 2)
-    return 0.0
+    if projeto == "MENTORES":
+        return round(vol_cert * 7.12, 2)
+    else:
+        return round(0.5 * vol_cert * 7.12 + 0.5 * vol_cert * 5.0, 2)
 
 def calc_empresa_recebe(dimensao: str, vol_cert: float,
                         form_desf: int = 0, form_nao_desf: int = 0) -> float:
     """Valor que a empresa recebe do COMPETE (70%)."""
-    if not dimensao:
+    if not dimensao or not vol_cert:
         return 0.0
     if dimensao in ("Pequena", "Micro"):
         return round(0.7 * 7.50 * vol_cert, 2)
@@ -48,7 +49,7 @@ def calc_empresa_recebe(dimensao: str, vol_cert: float,
 def calc_faturado_empresa(dimensao: str, vol_cert: float,
                           form_desf: int = 0, form_nao_desf: int = 0) -> float:
     """Valor faturado à empresa pelos 30%."""
-    if not dimensao:
+    if not dimensao or not vol_cert:
         return 0.0
     if dimensao in ("Pequena", "Micro"):
         return round(0.3 * 7.50 * vol_cert, 2)
@@ -191,12 +192,10 @@ def render_acoes(user: dict):
 
     # ── KPIs globais ──
     def _vol(a): return int(a.get("volume_horas") or 0) * int(a.get("formandos_certificados") or 0)
-    total_compete  = sum(calc_compete(
-        a.get("dimensao",""), _vol(a),
-        a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
-    total_consultor= sum(calc_consultor(a.get("formandos_certificados",0)) for a in acoes)
-    total_formador = sum(a.get("valor_fatura_formador") or 0 for a in acoes)
-    total_fat_emp  = sum(calc_faturado_empresa(
+    total_compete   = sum(calc_compete(a.get("projeto",""), _vol(a)) for a in acoes)
+    total_consultor = sum(calc_consultor(a.get("formandos_certificados",0), _vol(a)) for a in acoes)
+    total_formador  = sum(a.get("valor_fatura_formador") or 0 for a in acoes)
+    total_fat_emp   = sum(calc_faturado_empresa(
         a.get("dimensao",""), _vol(a),
         a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
     margem_total   = total_compete - total_consultor - total_formador
@@ -238,11 +237,10 @@ def render_acoes(user: dict):
         formador = a.get("formador_nome") or "—"
         val_form = a.get("valor_fatura_formador")
 
-        v_cons   = calc_consultor(fc)
-        v_comp   = calc_compete(dim, vol, fd, fnd)
+        v_cons   = calc_consultor(fc, vol)
+        v_comp   = calc_compete(proj, vol)
         v_emp_r  = calc_empresa_recebe(dim, vol, fd, fnd)
         v_fat_e  = calc_faturado_empresa(dim, vol, fd, fnd)
-        # vol já é ch * fc, correto
         margem, m_cor = _margem(v_comp, v_cons, val_form)
 
         with st.container(border=True):
