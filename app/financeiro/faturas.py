@@ -4,7 +4,7 @@ import streamlit as st
 from app.financeiro.helpers import (
     eur, ptag, bdg, kpi_h, sec, div, CORES, BGS,
     ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
-    guardar_comprovativo, notificar_rejeicao,
+    guardar_comprovativo, notificar_rejeicao, reg_hist,
     _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
 )
 
@@ -80,7 +80,7 @@ def _card(row,tipo,idx,user_nome):
             if not comp:
                 st.warning("Carrega o comprovativo de pagamento.")
             else:
-                comp_url=_guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
+                comp_url=guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
                 if SUPABASE_OK:
                     if marcar_paga(fid,user_nome):
                         reg_hist("Marcado pago",n,f,p,v)
@@ -172,10 +172,10 @@ def render_alertas(user):
                     if mot:
                         if SUPABASE_OK:
                             if rejeitar_fatura(fid,mot,user_nome):
-                                reg_hist("Rejeitado",n,f,p,v,mot); _notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                                reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
                         else:
                             st.session_state.mock_pre=[x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                            reg_hist("Rejeitado",n,f,p,v,mot); _notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                            reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
                     else: st.warning("Escreve um motivo.")
                 st.markdown("</div>",unsafe_allow_html=True)
 
