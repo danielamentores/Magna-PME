@@ -47,10 +47,11 @@ def render(user: dict):
     label_cons  = f"🤝 Consultores ({n_fc})"     if n_fc    > 0 else "🤝 Consultores"
     label_notif = f"🔔 Notificações ({n_novas})" if n_novas > 0 else "🔔 Notificações"
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 Dashboard",
         label_fat,
         label_cons,
+        "📋 Ações",
         "🏢 Faturação Empresas",
         label_notif,
     ])
@@ -68,9 +69,13 @@ def render(user: dict):
         render_consultores_financeiro(user)
 
     with tab4:
+        from app.financeiro.acoes import render_acoes
+        render_acoes(user)
+
+    with tab5:
         from app.financeiro.faturacao_empresas import render_faturacao_empresas
         render_faturacao_empresas(user)
 
-    with tab5:
+    with tab6:
         from app.financeiro.notificacoes import render_notificacoes
         render_notificacoes()
