@@ -83,6 +83,7 @@ def label_estado_acao(estado):
         "terminada_sem_fecho": "⚠️ Por fechar",
     }.get(estado, estado)
 
+
 PROJETO_NUMERO = {
     "ANIET": "01196000",
     "APCMC": "01195400",
@@ -91,6 +92,8 @@ PROJETO_NUMERO = {
     "MENTORES CALÇADO": "02981900",
     "MENTORES PRODUTECH": "02982000",
 }
+
+VALOR_HORA = 25  # € por hora de formação
 
 
 def descritivo_fatura(acao):
@@ -106,7 +109,8 @@ def descritivo_fatura(acao):
         f"Serviços de Formação ({empresa}, {nome} - {codigo}) "
         f"no âmbito do Projeto Compete2030 - FSE+ - {numero}"
     )
-    
+
+
 # ---------------------------------------------------------------------------
 # QUERIES
 # ---------------------------------------------------------------------------
@@ -155,7 +159,7 @@ def _get_acao_por_codigo(codigo):
         return m[0] if m else None
     try:
         r = get_supabase().table("acoes").select(
-            "id,codigo,nome,empresa_cliente,estado,volume_horas,formandos_certificados,data_inicio,data_fim"
+            "id,codigo,nome,empresa_cliente,estado,volume_horas,formandos_certificados,data_inicio,data_fim,projeto"
         ).ilike("codigo", codigo).execute()
         return r.data[0] if r.data else None
     except Exception:
@@ -275,9 +279,15 @@ def _submeter(user):
             st.markdown(f"**{acao_val.get('codigo', '—')}** — {acao_val.get('nome', '—')}")
             st.caption(f"Empresa: {acao_val.get('empresa_cliente', '—')}  ·  Projeto: {acao_val.get('projeto', '—')}")
             st.caption(f"Período: {str(acao_val.get('data_inicio', '—'))[:10]} → {str(acao_val.get('data_fim', '—'))[:10]}")
-            c1, c2 = st.columns(2)
-            c1.metric("Horas", f"{acao_val.get('volume_horas', '—')}h")
+
+            horas = acao_val.get("volume_horas") or 0
+            total = horas * VALOR_HORA
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Horas", f"{horas}h")
             c2.metric("Formandos", acao_val.get("formandos_certificados", "—"))
+            c3.metric("Valor/hora", eur(VALOR_HORA))
+            c4.metric("Total", eur(total))
+
             if fechada:
                 st.success("✅ Ação fechada — pronta a faturar.")
             else:
