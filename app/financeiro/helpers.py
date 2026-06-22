@@ -207,3 +207,84 @@ def reg_hist(acao, n, form, proj, val, mot=""):
 def marcar_todas_lidas():
     for n in st.session_state.get("notificacoes", []):
         n["lida"] = True
+
+
+# ---------------------------------------------------------------------------
+# MENSAGENS DE ERRO AMIGÁVEIS
+# ---------------------------------------------------------------------------
+import traceback as _tb
+
+_ERROS_CONHECIDOS = {
+    "connection":        ("🔌 Sem ligação à base de dados",       "A ligação ao Supabase falhou. Verifica as credenciais em Settings → Secrets."),
+    "jwt":               ("🔑 Sessão expirada",                   "A tua sessão expirou. Sai e volta a entrar."),
+    "permission":        ("🚫 Sem permissões",                    "Não tens permissão para realizar esta ação. Contacta o administrador."),
+    "unique":            ("⚠️ Registo duplicado",                 "Já existe um registo com estes dados. Verifica o número da fatura."),
+    "foreign":           ("🔗 Referência inválida",               "Um dos valores referenciados não existe na base de dados."),
+    "timeout":           ("⏱️ Tempo esgotado",                    "O servidor demorou demasiado a responder. Tenta novamente."),
+    "storage":           ("📁 Erro no armazenamento",             "Não foi possível guardar o ficheiro. Verifica o tamanho (máx. 50MB) e o formato (PDF)."),
+    "not found":         ("🔍 Não encontrado",                    "O registo que tentaste aceder não existe ou foi eliminado."),
+    "invalid":           ("📋 Dados inválidos",                   "Alguns campos têm valores incorretos. Verifica e tenta novamente."),
+    "network":           ("📡 Erro de rede",                      "Não foi possível contactar o servidor. Verifica a ligação à internet."),
+}
+
+def erro_amigavel(e: Exception, contexto: str = "") -> tuple[str, str]:
+    """Dado um erro, devolve (título, descrição) amigáveis."""
+    msg = str(e).lower()
+    for chave, (titulo, desc) in _ERROS_CONHECIDOS.items():
+        if chave in msg:
+            return titulo, desc
+    # Erro desconhecido
+    titulo = "❌ Algo correu mal"
+    desc   = f"Ocorreu um erro inesperado{f' ao {contexto}' if contexto else ''}. Se persistir, contacta o suporte."
+    return titulo, desc
+
+def mostrar_erro(e: Exception, contexto: str = "", expandir: bool = False):
+    """Mostra erro amigável no Streamlit com detalhe técnico opcional."""
+    import streamlit as st
+    titulo, desc = erro_amigavel(e, contexto)
+    st.html(
+        f'<div style="background:#FEF2F2;border:1px solid #FECACA;border-left:4px solid #DC2626;'
+        f'border-radius:10px;padding:14px 18px;margin:8px 0">'
+        f'<div style="font-weight:700;font-size:14px;color:#991B1B;margin-bottom:4px">{titulo}</div>'
+        f'<div style="font-size:13px;color:#7F1D1D">{desc}</div>'
+        f'</div>'
+    )
+    if expandir:
+        with st.expander("🔧 Detalhe técnico", expanded=False):
+            st.code(_tb.format_exc(), language="text")
+
+def mostrar_sucesso(mensagem: str, sub: str = ""):
+    """Mostra mensagem de sucesso estilizada."""
+    import streamlit as st
+    sub_html = f'<div style="font-size:12px;color:#166534;margin-top:2px">{sub}</div>' if sub else ""
+    st.html(
+        f'<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-left:4px solid #16A34A;'
+        f'border-radius:10px;padding:12px 18px;margin:8px 0">'
+        f'<div style="font-weight:600;font-size:13px;color:#15803D">✅ {mensagem}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
+
+def mostrar_aviso(mensagem: str, sub: str = ""):
+    """Mostra aviso estilizado."""
+    import streamlit as st
+    sub_html = f'<div style="font-size:12px;color:#92400E;margin-top:2px">{sub}</div>' if sub else ""
+    st.html(
+        f'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:4px solid #D97706;'
+        f'border-radius:10px;padding:12px 18px;margin:8px 0">'
+        f'<div style="font-weight:600;font-size:13px;color:#B45309">⚠️ {mensagem}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
+
+def mostrar_info(mensagem: str, sub: str = ""):
+    """Mostra informação estilizada."""
+    import streamlit as st
+    sub_html = f'<div style="font-size:12px;color:#1E40AF;margin-top:2px">{sub}</div>' if sub else ""
+    st.html(
+        f'<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-left:4px solid #2563EB;'
+        f'border-radius:10px;padding:12px 18px;margin:8px 0">'
+        f'<div style="font-weight:600;font-size:13px;color:#1D4ED8">ℹ️ {mensagem}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
