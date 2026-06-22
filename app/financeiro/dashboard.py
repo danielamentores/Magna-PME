@@ -1,22 +1,22 @@
 """Tab Dashboard — página do financeiro."""
 from __future__ import annotations
 import streamlit as st
+import plotly.graph_objects as go
 from app.financeiro.helpers import (
-    eur, ptag, bdg, kpi_h, sec, div, CORES, BGS,
-    ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
-    guardar_comprovativo, notificar_rejeicao,
-    _formador, _projeto, _email, ORDEM, PLOTLY_CFG,
-    n_notifs_nao_lidas,
+    ptag, bdg, kpi_h, sec, div, CORES, BGS,
+    _formador, _projeto, PLOTLY_CFG,
+    n_notifs_nao_lidas, marcar_todas_lidas,
 )
 
 try:
-    from app.db_financeiro import get_supabase
+    from app.db_financeiro import (
+        get_metricas_dashboard, get_faturas_recentes, get_despesa_por_projeto,
+        get_supabase,
+    )
     get_supabase()
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
-
-import plotly.graph_objects as go
 
 _MOCK_AV = [
     {"id":"a1","numero_fatura":"FT2026/0142","valor":3200,"prazo_pagamento":"2026-06-21","data_fatura":"2026-06-01","dias":5,"profiles":{"nome":"João Silva","email":"joao@demo.pt"},"acoes":{"nome":"MENTORES"}},
@@ -26,42 +26,46 @@ _MOCK_AV = [
     {"id":"a5","numero_fatura":"FT2026/0127","valor":2300,"prazo_pagamento":"2026-07-16","data_fatura":"2026-06-08","dias":30,"profiles":{"nome":"Rui Mendes","email":"rui@demo.pt"},"acoes":{"nome":"APIMA"}},
 ]
 
+# Mock values por período — quando a BD ligar, estes vêm da query com filtro de datas
+_MOCK_PERIODOS = {
+    "Tudo":          {"n_pre":3,"tp":6150,"n_apr":5,"ta":12300,"n_pago":23,"tpago":23150,"n_venc":1,"tv":3321.34},
+    "Este mês":      {"n_pre":2,"tp":4350,"n_apr":3,"ta":7200, "n_pago":8, "tpago":9200, "n_venc":1,"tv":3321.34},
+    "Mês anterior":  {"n_pre":1,"tp":1800,"n_apr":2,"ta":5100, "n_pago":15,"tpago":13950,"n_venc":0,"tv":0},
+    "Este ano":      {"n_pre":3,"tp":6150,"n_apr":5,"ta":12300,"n_pago":23,"tpago":23150,"n_venc":1,"tv":3321.34},
+}
 
-_MOCK_PROJETOS = [
-    {"id":"p1","nome":"MENTORES"},{"id":"p2","nome":"ANIET"},
-    {"id":"p3","nome":"APCMC"},   {"id":"p4","nome":"APIMA"},
-    {"id":"p5","nome":"PRODUTECH"},{"id":"p6","nome":"CALÇADO"},
-]
-_MOCK_DESPESA = {"MENTORES":52400,"ANIET":38900,"APCMC":27600,
-                  "APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}
+def _e(v) -> str:
+    """Valor com € à direita."""
+    try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+    except: return "— €"
 
-# ---------------------------------------------------------------------------
-# TAB 1 — DASHBOARD
-# ---------------------------------------------------------------------------
 def render_dashboard(user):
-    # Filtro de período
+    # ── Filtro de período ──
     col_per, _ = st.columns([2, 4])
     with col_per:
-        periodo = st.selectbox("Período", ["Tudo", "Este mês", "Mês anterior", "Este ano"],
-                               key="dash_periodo", label_visibility="visible")
-    st.html('<div style="height:8px"></div>')
+        periodo = st.selectbox(
+            "Período", list(_MOCK_PERIODOS.keys()),
+            key="dash_periodo",
+        )
 
-    # Painel de notificações no topo (se houver novas)
+    st.html('<div style="height:6px"></div>')
+
+    # ── Notificações — UMA vez, no topo ──
     notifs = st.session_state.get("notificacoes", [])
-    novas = [n for n in notifs if not n.get("lida")]
+    novas  = [n for n in notifs if not n.get("lida")]
     if novas:
-        n_txt = f"🔔 1 notificação não lida" if len(novas)==1 else f"🔔 {len(novas)} notificações não lidas"
+        n_txt = "🔔 1 notificação não lida" if len(novas) == 1 \
+                else f"🔔 {len(novas)} notificações não lidas"
         with st.expander(n_txt, expanded=True):
             for n in novas[:5]:
-                tipo_ico = "📄" if n.get("tipo") == "fatura_formador" else "🤝"
+                ico = "📄" if n.get("tipo") == "fatura_formador" else "🤝"
                 st.html(
                     f'<div style="display:flex;align-items:flex-start;gap:10px;'
                     f'padding:8px 0;border-bottom:1px solid #F0F2F5">'
                     f'<div style="width:8px;height:8px;border-radius:50%;background:#D97706;'
                     f'flex-shrink:0;margin-top:5px"></div>'
                     f'<div style="flex:1">'
-                    f'<div style="font-size:13px;font-weight:600;color:#1A1F2E">'
-                    f'{tipo_ico} {n["titulo"]}</div>'
+                    f'<div style="font-size:13px;font-weight:600;color:#1A1F2E">{ico} {n["titulo"]}</div>'
                     f'<div style="font-size:12px;color:#4B5263;margin-top:2px">{n["texto"]}</div>'
                     f'<div style="font-size:11px;color:#8B94A3;margin-top:2px">{n["timestamp"]}</div>'
                     f'</div></div>'
@@ -69,101 +73,121 @@ def render_dashboard(user):
             col_btn, _ = st.columns([2, 4])
             with col_btn:
                 if st.button("✓ Marcar todas como lidas", key="dash_notif_lidas"):
-                    from app.financeiro.helpers import marcar_todas_lidas
                     marcar_todas_lidas()
                     st.rerun()
 
+    # ── Dados (BD ou mock filtrado por período) ──
     if SUPABASE_OK:
-        m=get_metricas_dashboard()
-        recentes=get_faturas_recentes(8)
-        despesa=get_despesa_por_projeto()
-        n_pre,tp=m["pre_aprovacao_count"],m["pre_aprovacao_total"]
-        n_apr,ta=m["aprovado_count"],m["aprovado_total"]
-        n_pago,tpago=m["pago_mes_count"],m["pago_mes_total"]
-        n_venc,tv=m["vencido_count"],m["vencido_total"]
+        m      = get_metricas_dashboard()
+        recentes = get_faturas_recentes(8)
+        despesa  = get_despesa_por_projeto()
+        n_pre, tp    = m["pre_aprovacao_count"],  m["pre_aprovacao_total"]
+        n_apr, ta    = m["aprovado_count"],        m["aprovado_total"]
+        n_pago, tpago= m["pago_mes_count"],        m["pago_mes_total"]
+        n_venc, tv   = m["vencido_count"],         m["vencido_total"]
     else:
-        n_pre=len(st.session_state.mock_pre); tp=sum(f["valor"] for f in st.session_state.mock_pre)
-        n_venc=len(st.session_state.mock_venc); tv=sum(f["valor"] for f in st.session_state.mock_venc)
-        n_apr=len(st.session_state.mock_av); ta=sum(f["valor"] for f in st.session_state.mock_av)
-        n_pago,tpago=23,23150
-        recentes=_MOCK_AV[:5]
-        despesa=[{"projeto":k,"valor":v} for k,v in {"MENTORES":52400,"ANIET":38900,"APCMC":27600,"APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}.items()]
+        p = _MOCK_PERIODOS[periodo]
+        n_pre,  tp    = p["n_pre"],  p["tp"]
+        n_apr,  ta    = p["n_apr"],  p["ta"]
+        n_pago, tpago = p["n_pago"], p["tpago"]
+        n_venc, tv    = p["n_venc"], p["tv"]
+        recentes = _MOCK_AV[:5]
+        despesa  = [{"projeto":k,"valor":v} for k,v in {
+            "MENTORES":52400,"ANIET":38900,"APCMC":27600,
+            "APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}.items()]
 
-    # Banner notificações não lidas
-    n_novas = n_notifs_nao_lidas()
-    if n_novas > 0:
+    # Aviso faturas pendentes
+    if n_pre > 0:
         st.html(
-            f'<div class="fin-warn" style="cursor:pointer">'
-            f'🔔 <strong>{n_novas} notificação(ões) não lida(s)</strong> — '
-            f'nova(s) fatura(s) submetida(s). Ver em <strong>Notificações</strong>.'
-            f'</div>'
+            f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual'
+            f'</strong> — ver em <strong>🧾 Faturas</strong>.</div>'
         )
 
-    if n_pre>0:
-        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>🧾 Faturas</strong>.</div>')
-
-    def _e(v):
-        try: return f"{float(v):,.0f} €".replace(",",".")
-        except: return "— €"
-
+    # ── KPIs ──
     st.html(
         '<div class="fin-kpi-row">'
-        +kpi_h("🔍 Pré-aprovação",   _e(tp),    f"{n_pre} faturas","a")
-        +kpi_h("✅ Aprovado a pagar",_e(ta),    f"{n_apr} faturas","g")
-        +kpi_h("💳 Pago este mês",   _e(tpago), f"{n_pago} faturas","b")
-        +kpi_h("🚨 Vencido",         _e(tv),    f"{n_venc} faturas","r")
-        +'</div>'
+        + kpi_h("🔍 Pré-aprovação",    _e(tp),    f"{n_pre} faturas",  "a")
+        + kpi_h("✅ Aprovado a pagar",  _e(ta),    f"{n_apr} faturas",  "g")
+        + kpi_h("💳 Pago este mês",     _e(tpago), f"{n_pago} faturas", "b")
+        + kpi_h("🚨 Vencido",           _e(tv),    f"{n_venc} faturas", "r")
+        + '</div>'
     )
 
     st.html(div())
 
-    col_l,col_r=st.columns([3,2])
+    # ── Faturas recentes + gráfico estado ──
+    col_l, col_r = st.columns([3, 2])
     with col_l:
-        st.markdown(sec("Faturas recentes"),unsafe_allow_html=True)
-        cards_html=""
+        st.markdown(sec("Faturas recentes"), unsafe_allow_html=True)
+        cards = ""
         for row in recentes:
-            f=_formador(row); p=_projeto(row); e=row.get("estado") or "submetida"
-            n=row.get("numero_fatura") or "—"; v=row.get("valor") or 0
-            cards_html+=(f'<div class="fin-card"><div style="flex:1"><div class="ct">{n}</div>'
-                        f'<div class="cm">{ptag(p)}&nbsp;·&nbsp;{f}</div></div>'
-                        f'<div style="text-align:right;margin-right:10px"><div class="cv">{eur(v)}</div></div>'
-                        f'{bdg(e)}</div>')
-        st.markdown(cards_html,unsafe_allow_html=True)
+            f = _formador(row); p = _projeto(row)
+            e = row.get("estado") or "submetida"
+            n = row.get("numero_fatura") or "—"
+            v = row.get("valor") or 0
+            cards += (
+                f'<div class="fin-card">'
+                f'<div style="flex:1">'
+                f'<div class="ct">{n}</div>'
+                f'<div class="cm">{ptag(p)}&nbsp;·&nbsp;{f}</div>'
+                f'</div>'
+                f'<div style="text-align:right;margin-right:10px">'
+                f'<div class="cv">{_e(v)}</div>'
+                f'</div>'
+                f'{bdg(e)}</div>'
+            )
+        st.markdown(cards, unsafe_allow_html=True)
+
     with col_r:
-        st.markdown(sec("Por estado"),unsafe_allow_html=True)
-        fig=go.Figure(go.Pie(
+        st.markdown(sec("Por estado"), unsafe_allow_html=True)
+        fig = go.Figure(go.Pie(
             labels=["Pré-aprovação","Aprovado","Pago","Vencido"],
-            values=[n_pre or 1,n_apr or 1,n_pago or 1,n_venc or 1],
-            hole=0.65,marker_colors=["#D97706","#16A34A","#2563EB","#DC2626"],
-            textinfo="percent",textfont=dict(size=11),showlegend=True,
+            values=[n_pre or 1, n_apr or 1, n_pago or 1, n_venc or 1],
+            hole=0.65,
+            marker_colors=["#D97706","#16A34A","#2563EB","#DC2626"],
+            textinfo="percent", textfont=dict(size=11), showlegend=True,
         ))
-        fig.update_layout(margin=dict(t=10,b=10,l=0,r=10),height=270,
-            legend=dict(orientation="v",x=1.0,y=0.5,font=dict(size=11),xanchor="left",yanchor="middle"),
-            paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig,use_container_width=True,config=PLOTLY_CFG)
+        fig.update_layout(
+            margin=dict(t=10,b=10,l=0,r=10), height=270,
+            legend=dict(orientation="v",x=1.0,y=0.5,font=dict(size=11),
+                        xanchor="left",yanchor="middle"),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CFG)
 
     st.html(div())
-    st.markdown(sec("Despesa por projeto"),unsafe_allow_html=True)
-    ds=sorted(despesa,key=lambda x:x["valor"])
-    mx=max((d["valor"] for d in ds),default=1)
-    fig2=go.Figure(go.Bar(x=[d["valor"] for d in ds],y=[d["projeto"] for d in ds],orientation="h",
+
+    # ── Despesa por projeto ──
+    st.markdown(sec("Despesa por projeto"), unsafe_allow_html=True)
+    ds = sorted(despesa, key=lambda x: x["valor"])
+    mx = max((d["valor"] for d in ds), default=1)
+    fig2 = go.Figure(go.Bar(
+        x=[d["valor"] for d in ds],
+        y=[d["projeto"] for d in ds],
+        orientation="h",
         marker_color=[CORES.get(d["projeto"],"#888") for d in ds],
-        text=[eur(d["valor"]) for d in ds],textposition="outside",textfont=dict(size=12)))
-    fig2.update_layout(margin=dict(t=4,b=4,l=4,r=110),height=270,
-        xaxis=dict(showticklabels=False,showgrid=False,range=[0,mx*1.3]),
-        yaxis=dict(showgrid=False,tickfont=dict(size=13)),
-        paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)")
-    st.plotly_chart(fig2,use_container_width=True,config=PLOTLY_CFG)
+        text=[_e(d["valor"]) for d in ds],
+        textposition="outside", textfont=dict(size=12),
+    ))
+    fig2.update_layout(
+        margin=dict(t=4,b=4,l=4,r=130), height=270,
+        xaxis=dict(showticklabels=False, showgrid=False, range=[0,mx*1.35]),
+        yaxis=dict(showgrid=False, tickfont=dict(size=13)),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+    )
+    st.plotly_chart(fig2, use_container_width=True, config=PLOTLY_CFG)
 
     st.html(div())
+
+    # ── Exportação global ──
     st.markdown(sec("⬇️ Exportação global"), unsafe_allow_html=True)
     col_e1, col_e2, col_e3 = st.columns(3)
     with col_e1:
         if st.button("📊 Exportar todas as faturas", use_container_width=True, key="exp_fat"):
-            st.toast("Exportação disponível quando a BD estiver ligada.")
+            st.toast("Disponível quando a BD estiver ligada.")
     with col_e2:
         if st.button("🤝 Exportar consultores", use_container_width=True, key="exp_cons"):
-            st.toast("Exportação disponível quando a BD estiver ligada.")
+            st.toast("Disponível quando a BD estiver ligada.")
     with col_e3:
         if st.button("🏢 Exportar faturação empresas", use_container_width=True, key="exp_emp"):
-            st.toast("Exportação disponível quando a BD estiver ligada.")
+            st.toast("Disponível quando a BD estiver ligada.")
