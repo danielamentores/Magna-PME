@@ -1,17 +1,21 @@
 """Pagina do gestor de projeto."""
 import streamlit as st
+
 from app import db_coordenador as db
+from app.pages import gestor_controlo
+
 
 def render(user: dict):
     st.header(f"Bem-vinda, {user['nome']}")
     st.caption("Perfil: Gestor de Projeto")
     tab1, tab2, tab3 = st.tabs(["📊 Controlo de Execução", "✅ Confirmar faturacao", "💼 Reembolsos"])
     with tab1:
-        st.info("🚧 Em construcao — dashboard com todas as acoes.")
+        gestor_controlo.render()
     with tab2:
         _render_confirmacao_faturacao()
     with tab3:
         st.info("🚧 Em construcao — selecionar acoes para reembolso.")
+
 
 def _render_confirmacao_faturacao():
     st.subheader("Faturação — confirmar ações da coordenadora")
