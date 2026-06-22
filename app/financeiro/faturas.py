@@ -165,7 +165,10 @@ def render_alertas(user):
     venc=ordenar(venc,ordem); av=ordenar(av,ordem)
     tv=sum(f.get("valor") or 0 for f in venc); ta=sum(f.get("valor") or 0 for f in av)
 
-    st.html('<div class="fin-kpi-row">'+kpi_h("🚨 Vencido",eur(tv),f"{len(venc)} faturas","r")+kpi_h("⏳ A vencer 30d",eur(ta),f"{len(av)} faturas","a")+kpi_h("💳 Pago este mês",eur(121400),"23 faturas","b")+kpi_h("💰 Total pendente",eur(tv+ta),f"{len(venc)+len(av)} faturas","p")+'</div>')
+    def _e(v):
+        try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+        except: return "— €"
+    st.html('<div class="fin-kpi-row">'+kpi_h("🚨 Vencido",_e(tv),f"{len(venc)} faturas","r")+kpi_h("⏳ A vencer 30d",_e(ta),f"{len(av)} faturas","a")+kpi_h("💳 Pago este mês",_e(23150),"23 faturas","b")+kpi_h("💰 Total pendente",_e(tv+ta),f"{len(venc)+len(av)} faturas","p")+'</div>')
     st.html(div())
 
     # Pré-aprovação
