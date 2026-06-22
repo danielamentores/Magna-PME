@@ -462,8 +462,8 @@ def render_consultores_financeiro(user):
 
     st.html(
         '<div class="fin-kpi-row">'
-        +kpi_h("⏳ Faturas a aprovar", str(n_pend), "submetidas pelos consultores","a")
-        +kpi_h("📄 NH emitidas",       str(n_nh),   "pela gestora","b")
+        +kpi_h("⏳ Faturas a aprovar", str(n_pend), "submetidas pelos Consultores","a")
+        +kpi_h("📄 NH emitidas",       str(n_nh),   "pela Gestora","b")
         +'</div>'
     )
     st.html(div())
