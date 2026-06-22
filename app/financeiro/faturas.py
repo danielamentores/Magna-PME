@@ -1,4 +1,4 @@
-"""Tab Faturas — página do financeiro."""
+"""Tab Faturas — página do financeiro.""
 from __future__ import annotations
 import streamlit as st
 from app.financeiro.helpers import (
