@@ -254,10 +254,10 @@ def render_faturacao_empresas(user: dict):
 
     st.html(
         '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px">'
-        + kpi_h("📋 Por faturar",    _e(t_pf), f"{n_pf} ações", "a")
-        + kpi_h("📄 Fatura emitida", _e(t_fi), f"{n_fi} ações", "b")
-        + kpi_h("✅ Pago",           _e(t_pg), f"{n_pg} ações", "g")
-        + kpi_h("💰 Total a receber", _e(t_pf+t_fi), f"{n_pf+n_fi} por cobrar", "r")
+        + kpi_h("📋 POR FATURAR",    _e(t_pf), f"{n_pf} Ações", "a")
+        + kpi_h("📄 FATURA EMITIDA", _e(t_fi), f"{n_fi} Ações", "b")
+        + kpi_h("✅ PAGO",           _e(t_pg), f"{n_pg} Ações", "g")
+        + kpi_h("💰 TOTAL A RECEBER", _e(t_pf+t_fi), f"{n_pf+n_fi} por Cobrar", "r")
         + '</div>'
     )
 
