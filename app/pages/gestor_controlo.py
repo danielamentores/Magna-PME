@@ -1,137 +1,90 @@
 """Separador 'Controlo de Execução' do perfil do gestor.
 
-Volume de formação = horas × formandos que terminaram.
-Dados de exemplo — substituir pelos reais (db_gestor / Supabase).
+Dados dos consultores por projeto, vindos do mapa de execução (Excel).
+Volume = volume de formação (horas × formandos que terminaram), já totalizado
+por consultor na coluna "Volume Terminado". "volume_atribuido" é o volume
+que foi atribuído a cada consultor.
 """
 import streamlit as st
 
-LIMIAR_ALERTA = 50  # % abaixo do qual se assinala "volume aquém do atribuído"
+LIMIAR_ALERTA = 50  # % do atribuído abaixo do qual se assinala "aquém"
 
 # ---------------------------------------------------------------------------
-# PROJETOS (dados de exemplo)
+# PROJETOS (dados reais do mapa de execução)
+# Produtech e Calçado começaram este ano — ainda sem execução.
 # ---------------------------------------------------------------------------
 PROJETOS_CLUSTERS = {
     "Produtech": {
-        "dias_restantes": 120,
-        "consultores": [
-            {"nome": "Ana Martins", "volume_atribuido": 2000, "acoes": [
-                {"nome": "Indústria 4.0", "horas": 20, "formandos": 10},
-                {"nome": "Manutenção preditiva", "horas": 16, "formandos": 8},
-            ]},
-            {"nome": "Bruno Lopes", "volume_atribuido": 1500, "acoes": [
-                {"nome": "Robótica colaborativa", "horas": 25, "formandos": 6},
-            ]},
-        ],
+        "dias_restantes": None,
+        "consultores": [],
     },
     "APCMC": {
-        "dias_restantes": 90,
+        "dias_restantes": 122,
         "consultores": [
-            {"nome": "Carla Sousa", "volume_atribuido": 1800, "acoes": [
-                {"nome": "Gestão de stocks", "horas": 30, "formandos": 12},
-            ]},
+            {"nome": "RPA", "volume_atribuido": 30360, "volume_feito": 1903},
+            {"nome": "Euroceg", "volume_atribuido": 86680, "volume_feito": 36990},
+            {"nome": "Mais Advantage", "volume_atribuido": 28400, "volume_feito": 176},
+            {"nome": "Nortefor", "volume_atribuido": 5680, "volume_feito": 1073},
+            {"nome": "Winet", "volume_atribuido": 168, "volume_feito": 56},
+            {"nome": "Talento Planetário", "volume_atribuido": 4772, "volume_feito": 1616},
+            {"nome": "Semet", "volume_atribuido": 6000, "volume_feito": 480},
+            {"nome": "Lenhotec", "volume_atribuido": 3760, "volume_feito": 695},
+            {"nome": "Etapas", "volume_atribuido": 14600, "volume_feito": 3000},
+            {"nome": "Mentores & Tutores", "volume_atribuido": 4000, "volume_feito": 597},
         ],
     },
     "Calçado": {
-        "dias_restantes": 200,
-        "consultores": [
-            {"nome": "Diogo Reis", "volume_atribuido": 1200, "acoes": [
-                {"nome": "Design de produto", "horas": 24, "formandos": 9},
-            ]},
-        ],
+        "dias_restantes": None,
+        "consultores": [],
     },
-    "Mentores-Habitat": {
-        "dias_restantes": 60,
+    "Mentores": {
+        "dias_restantes": 253,
         "consultores": [
-            {"nome": "Eva Nunes", "volume_atribuido": 2200, "acoes": [
-                {"nome": "Eficiência energética", "horas": 20, "formandos": 14},
-                {"nome": "Materiais sustentáveis", "horas": 18, "formandos": 11},
-            ]},
+            {"nome": "RPA", "volume_atribuido": 16538, "volume_feito": 0},
+            {"nome": "Euroceg", "volume_atribuido": 9000, "volume_feito": 0},
+            {"nome": "Cristina Ferreira", "volume_atribuido": 7510, "volume_feito": 0},
+            {"nome": "Mais Advantage", "volume_atribuido": 45125, "volume_feito": 1352},
+            {"nome": "Nortefor", "volume_atribuido": 28375, "volume_feito": 482},
+            {"nome": "Winet", "volume_atribuido": 30125, "volume_feito": 2974},
+            {"nome": "Talento Planetário", "volume_atribuido": 15750, "volume_feito": 2439},
+            {"nome": "Semet", "volume_atribuido": 15000, "volume_feito": 7104},
+            {"nome": "Multiformativa", "volume_atribuido": 16538, "volume_feito": 328},
+            {"nome": "Etapas", "volume_atribuido": 36238, "volume_feito": 9147},
+            {"nome": "Mentores & Tutores", "volume_atribuido": 13538, "volume_feito": 2066},
+            {"nome": "AEBA", "volume_atribuido": 20000, "volume_feito": 0},
         ],
     },
     "APIMA": {
-        "dias_restantes": 150,
+        "dias_restantes": 253,
         "consultores": [
-            {"nome": "Filipe Costa", "volume_atribuido": 1600, "acoes": [
-                {"nome": "Mobiliário e processos", "horas": 22, "formandos": 7},
-            ]},
+            {"nome": "Consultora Joana Peixoto", "volume_atribuido": 23000, "volume_feito": 400},
+            {"nome": "Semet", "volume_atribuido": 5000, "volume_feito": 240},
+            {"nome": "Lenhotec", "volume_atribuido": 58000, "volume_feito": 3083.5},
+            {"nome": "Psolutions", "volume_atribuido": 12000, "volume_feito": 0},
+            {"nome": "Mentores & Tutores", "volume_atribuido": 2000, "volume_feito": 0},
         ],
     },
     "ANIET": {
-        "dias_restantes": 75,
+        "dias_restantes": 192,
         "consultores": [
-            {"nome": "Gabriela Pinto", "volume_atribuido": 1900, "acoes": [
-                {"nome": "Segurança em obra", "horas": 24, "formandos": 16},
-            ]},
+            {"nome": "Mais Advantage", "volume_atribuido": 9760, "volume_feito": 2906},
+            {"nome": "Omega", "volume_atribuido": 11760, "volume_feito": 4864},
+            {"nome": "Winet", "volume_atribuido": 25080, "volume_feito": 5706},
+            {"nome": "Semet", "volume_atribuido": 12000, "volume_feito": 8327},
+            {"nome": "Consultora Joana Peixoto", "volume_atribuido": 9800, "volume_feito": 550},
+            {"nome": "Multiformativa", "volume_atribuido": 2840, "volume_feito": 448},
+            {"nome": "Psolutions", "volume_atribuido": 29000, "volume_feito": 1200},
+            {"nome": "Lenhotec", "volume_atribuido": 1200, "volume_feito": 1200},
         ],
     },
 }
-
-# ---------------------------------------------------------------------------
-# AÇÕES VINDAS DO FORMADOR (integradas no controlo de execução)
-# ---------------------------------------------------------------------------
-_ACOES_FORMADOR = [
-    {"id": "a1", "magna_id": "COMPETE2030-FSE+-01195000", "codigo": "LIKE GARDEN.2.PCE",
-     "nome": "Escalada e desmanche de árvores com motosserra", "empresa_cliente": "Like Garden",
-     "data_inicio": "2026-02-19", "data_fim": "2026-03-13", "volume_horas": 50,
-     "formandos_certificados": 18, "estado": "fechada", "projeto": "MENTORES", "tem_fatura": True},
-    {"id": "a2", "magna_id": "COMPETE2030-FSE+-01196000", "codigo": "CAMOESAS.03.PCE",
-     "nome": "Segurança nos trabalhos de construção civil",
-     "empresa_cliente": "CAMOESAS, LDA", "data_inicio": "2025-11-30", "data_fim": "2025-12-12",
-     "volume_horas": 24, "formandos_certificados": 16, "estado": "fechada", "projeto": "ANIET", "tem_fatura": False},
-    {"id": "a3", "magna_id": "COMPETE2030-FSE+-01195000", "codigo": "FENABEL.GEPSLT_16",
-     "nome": "Gestão de emergências e primeiros socorros no local de trabalho",
-     "empresa_cliente": "Fenabel, S.A", "data_inicio": "2026-05-14", "data_fim": "2026-06-04",
-     "volume_horas": 16, "formandos_certificados": 0, "estado": "a_decorrer", "projeto": "MENTORES", "tem_fatura": False},
-    {"id": "a4", "magna_id": "COMPETE2030-FSE+-01196000", "codigo": "FORESTCORTE.2.PCE",
-     "nome": "Utilização da motosserra nas operações florestais",
-     "empresa_cliente": "Forestcorte", "data_inicio": "2026-04-10", "data_fim": "2026-05-31",
-     "volume_horas": 25, "formandos_certificados": 8, "estado": "terminada_sem_fecho", "projeto": "ANIET", "tem_fatura": False},
-]
-
-# Consultor temporário onde ficam as ações ainda sem consultor atribuído
-_CONSULTOR_POR_ATRIBUIR = "Ações Magna (a atribuir)"
-
-
-def _integrar_acoes_formador():
-    """Junta as ações do formador aos projetos, por nome de projeto.
-    Como ainda não têm consultor, vão para um bloco 'a atribuir'.
-    Corre uma vez (no carregamento do módulo)."""
-    for ac in _ACOES_FORMADOR:
-        proj_nome = (ac.get("projeto") or "—").strip()
-        # encontra a chave do cluster (case-insensitive); se não existir, cria
-        chave = next((k for k in PROJETOS_CLUSTERS if k.upper() == proj_nome.upper()), None)
-        if chave is None:
-            chave = proj_nome
-            PROJETOS_CLUSTERS[chave] = {"dias_restantes": 0, "consultores": []}
-
-        consultores = PROJETOS_CLUSTERS[chave]["consultores"]
-        cons = next((c for c in consultores if c["nome"] == _CONSULTOR_POR_ATRIBUIR), None)
-        if cons is None:
-            cons = {"nome": _CONSULTOR_POR_ATRIBUIR, "volume_atribuido": 0, "acoes": []}
-            consultores.append(cons)
-
-        cons["acoes"].append({
-            "nome": ac.get("nome", "—"),
-            "horas": ac.get("volume_horas", 0),
-            "formandos": ac.get("formandos_certificados", 0),
-            "codigo": ac.get("codigo"),
-            "empresa": ac.get("empresa_cliente"),
-            "estado": ac.get("estado"),
-        })
-
-
-_integrar_acoes_formador()
 
 
 # ---------------------------------------------------------------------------
 # CÁLCULOS
 # ---------------------------------------------------------------------------
-def _vol_acao(a):
-    return (a.get("horas") or 0) * (a.get("formandos") or 0)
-
-
 def _vol_consultor(c):
-    return sum(_vol_acao(a) for a in c.get("acoes", []))
+    return c.get("volume_feito", 0)
 
 
 def _totais_projeto(proj):
@@ -139,6 +92,11 @@ def _totais_projeto(proj):
     vol_atrib = sum(c.get("volume_atribuido", 0) for c in proj["consultores"])
     pct = (vol_feito / vol_atrib * 100) if vol_atrib else 0
     return vol_feito, vol_atrib, pct
+
+
+def _fmt(n):
+    """Mostra inteiros sem decimais e o resto com 1 casa."""
+    return f"{n:.0f}" if float(n).is_integer() else f"{n:.1f}"
 
 
 # ---------------------------------------------------------------------------
@@ -171,13 +129,19 @@ def _render_clusters():
     for i, nome in enumerate(nomes):
         proj = PROJETOS_CLUSTERS[nome]
         vol_feito, vol_atrib, pct = _totais_projeto(proj)
+        dias = proj.get("dias_restantes")
         with cols[i % 3]:
             with st.container(border=True):
                 st.markdown(f"**{nome}**")
+                if not proj["consultores"]:
+                    st.caption("A iniciar este ano — sem execução ainda.")
+                    st.button("Ver detalhe", key=f"ce_ver_{nome}",
+                              use_container_width=True, disabled=True)
+                    continue
                 st.metric("Execução", f"{pct:.0f}%")
                 st.progress(min(pct / 100, 1.0))
-                st.caption(f"Volume: {vol_feito} / {vol_atrib}")
-                st.caption(f"⏳ {proj['dias_restantes']} dias para terminar")
+                st.caption(f"Volume: {_fmt(vol_feito)} / {_fmt(vol_atrib)}")
+                st.caption(f"⏳ {dias} dias para terminar" if dias is not None else "⏳ —")
                 if st.button("Ver detalhe", key=f"ce_ver_{nome}", use_container_width=True):
                     st.session_state["ce_proj_sel"] = nome
                     st.rerun()
@@ -191,32 +155,33 @@ def _render_detalhe(nome):
 
     st.markdown(f"### {nome}")
     vol_feito, vol_atrib, pct = _totais_projeto(proj)
+    dias = proj.get("dias_restantes")
     c1, c2, c3 = st.columns(3)
     c1.metric("Execução", f"{pct:.0f}%")
-    c2.metric("Volume feito", f"{vol_feito} / {vol_atrib}")
-    c3.metric("Dias restantes", proj["dias_restantes"])
+    c2.metric("Volume feito", f"{_fmt(vol_feito)} / {_fmt(vol_atrib)}")
+    c3.metric("Dias restantes", dias if dias is not None else "—")
+
+    if not proj["consultores"]:
+        st.info("Projeto a iniciar este ano — ainda sem consultores/execução.")
+        return
 
     st.divider()
     st.markdown("#### Consultores")
-    for c in proj["consultores"]:
+    # ordenar do mais aquém para o mais avançado
+    consultores = sorted(
+        proj["consultores"],
+        key=lambda c: (c["volume_feito"] / c["volume_atribuido"]) if c.get("volume_atribuido") else 0,
+    )
+    for c in consultores:
         vc = _vol_consultor(c)
         va = c.get("volume_atribuido", 0)
         with st.container(border=True):
             st.markdown(f"**{c['nome']}**")
             if va > 0:
                 pc = vc / va * 100
-                st.caption(f"Volume: {vc} / {va}  ·  {pc:.0f}% do atribuído")
+                st.caption(f"Volume: {_fmt(vc)} / {_fmt(va)}  ·  {pc:.0f}% do atribuído")
                 st.progress(min(pc / 100, 1.0))
                 if pc < LIMIAR_ALERTA:
-                    st.warning("⚠️ Volume bastante abaixo do atribuído — considerar redistribuir.")
+                    st.warning("⚠️ Abaixo do volume atribuído — considerar redistribuir.")
             else:
-                st.caption(f"Volume: {vc}  ·  sem volume atribuído definido")
-
-            st.caption("Ações de formação:")
-            for a in c.get("acoes", []):
-                extra = f" [{a['codigo']}]" if a.get("codigo") else ""
-                empresa = f" · {a['empresa']}" if a.get("empresa") else ""
-                st.caption(
-                    f"• {a['nome']}{extra}{empresa} — {a['horas']}h × {a['formandos']} formandos "
-                    f"= {_vol_acao(a)} de volume"
-                )
+                st.caption(f"Volume feito: {_fmt(vc)}  ·  sem volume atribuído")
