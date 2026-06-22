@@ -139,7 +139,7 @@ def _execucao():
         st.progress(min(pct/100, 1.0))
 
         st.html(div())
-st.markdown("**📋 Lista de ações (exportável)**")
+        st.markdown("**📋 Lista de ações (exportável)**")
         ESTADO_LBL = {"fechada": "Fechada", "a_decorrer": "A decorrer", "planeada": "Planeada"}
         linhas = []
         for a in acoes:
