@@ -10,7 +10,7 @@ CORES = {"MENTORES":"#2563EB","ANIET":"#16A34A","APCMC":"#D97706",
 BGS   = {"MENTORES":"#EEF3FD","ANIET":"#F0FDF4","APCMC":"#FFFBEB",
          "APIMA":"#FDF2F8","PRODUTECH":"#F5F3FF","CALÇADO":"#F0FDFA"}
 
-def eur(v):
+def _e(v):
     try: return f"€ {float(v):,.0f}".replace(",",".")
     except: return "€ —"
 
@@ -67,6 +67,21 @@ try:
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
+
+def _e(v):
+    try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+    except: return "— €"
+
+def _empty(msg="Sem dados."):
+    return f'<div style="background:#F7F8FC;border:1px dashed #E4E7EF;border-radius:10px;padding:18px;text-align:center;color:#8B94A3;font-size:13px">{msg}</div>'
+
+def _sec_h(title, sub=""):
+    s = f'<p style="font-size:12px;color:#8B94A3;margin:0 0 12px">{sub}</p>' if sub else ""
+    return f'<p style="font-size:13px;font-weight:700;color:#4B5263;text-transform:uppercase;letter-spacing:.06em;margin:0 0 3px">{title}</p>{s}'
+
+def _divider():
+    return '<div style="height:1px;background:#E4E7EF;margin:20px 0 18px"></div>'
+
 
 DIMENSOES = ["Micro", "Pequena", "Média"]
 ESTADOS_ORDEM = ["por_faturar", "fatura_emitida", "pago"]
@@ -238,15 +253,15 @@ def render_faturacao_empresas(user: dict):
     t_pg  = sum(x.get("valor_recebido") or x.get("valor_30pct") or 0 for x in todos if x["estado"]=="pago")
 
     st.html(
-        '<div class="fin-kpi-row">'
-        + kpi_h("📋 Por faturar",    eur(t_pf), f"{n_pf} ações", "a")
-        + kpi_h("📄 Fatura emitida", eur(t_fi), f"{n_fi} ações", "b")
-        + kpi_h("✅ Pago",           eur(t_pg), f"{n_pg} ações", "g")
-        + kpi_h("💰 Total a receber", eur(t_pf+t_fi), f"{n_pf+n_fi} por cobrar", "r")
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px">'
+        + kpi_h("📋 Por faturar",    _e(t_pf), f"{n_pf} ações", "a")
+        + kpi_h("📄 Fatura emitida", _e(t_fi), f"{n_fi} ações", "b")
+        + kpi_h("✅ Pago",           _e(t_pg), f"{n_pg} ações", "g")
+        + kpi_h("💰 Total a receber", _e(t_pf+t_fi), f"{n_pf+n_fi} por cobrar", "r")
         + '</div>'
     )
 
-    st.html(div())
+    st.html(_divider())
 
     # ---- FILTROS ----
     col_f, col_e, col_p, col_d1, col_d2 = st.columns([2, 2, 2, 1, 1])
@@ -288,7 +303,7 @@ def render_faturacao_empresas(user: dict):
             return row.get("estado") == "por_faturar" and not d_ini and not d_fim
         fat_list = [x for x in fat_list if _dentro_datas(x)]
 
-    st.html(div())
+    st.html(_divider())
 
     # ---- NOVA FATURAÇÃO ----
     with st.expander("➕ Registar nova faturação de empresa", expanded=False):
@@ -319,7 +334,7 @@ def render_faturacao_empresas(user: dict):
             valor  = calcular_30pct(dim, volume, form_desf, form_nao_desf)
 
             st.markdown(
-                f"**Volume:** {volume} horas · **Valor 30% a faturar:** <span style='font-size:18px;font-weight:700;color:#1A1F2E'>{eur(valor)}</span>",
+                f"**Volume:** {volume} horas · **Valor 30% a faturar:** <span style='font-size:18px;font-weight:700;color:#1A1F2E'>{_e(valor)}</span>",
                 unsafe_allow_html=True
             )
 
@@ -348,13 +363,13 @@ def render_faturacao_empresas(user: dict):
                     st.toast(f"Faturação registada para {acao.get('empresa_cliente')}!")
                     st.rerun()
 
-    st.html(div())
+    st.html(_divider())
 
     # ---- LISTA DE FATURAÇÕES ----
-    st.markdown(sec(f"Faturações ({len(fat_list)})", "Clica numa linha para atualizar o estado."), unsafe_allow_html=True)
+    st.html(_sec_h(f"Faturações ({len(fat_list)})", "Clica numa linha para atualizar o estado."))
 
     if not fat_list:
-        st.html('<div class="fin-empty">Nenhuma faturação encontrada para este filtro.</div>')
+        st.html(_empty('Nenhuma faturação encontrada para este filtro.'))
     else:
         for row in fat_list:
             fe_id   = row.get("id") or "—"
@@ -380,14 +395,14 @@ def render_faturacao_empresas(user: dict):
                         f'{ptag(proj)}&nbsp;·&nbsp;{codigo}&nbsp;·&nbsp;{dim}'
                         f'</div>'
                         f'{"<div style=\\'font-size:12px;color:#8B94A3\\'>Fatura: " + n_fat + " · " + d_fat + "</div>" if n_fat != "—" else ""}'
-                        f'{"<div style=\\'font-size:12px;color:#16A34A\\'>Pago em: " + d_pag + " · " + eur(val_rec) + "</div>" if d_pag != "—" else ""}'
+                        f'{"<div style=\\'font-size:12px;color:#16A34A\\'>Pago em: " + d_pag + " · " + _e(val_rec) + "</div>" if d_pag != "—" else ""}'
                         f'</div>', unsafe_allow_html=True
                     )
 
                 with col_val:
                     st.markdown(
                         f'<div style="text-align:right;padding-top:6px">'
-                        f'<div style="font-weight:700;font-size:18px;color:#1A1F2E;margin-bottom:6px">{eur(valor)}</div>'
+                        f'<div style="font-weight:700;font-size:18px;color:#1A1F2E;margin-bottom:6px">{_e(valor)}</div>'
                         f'<div>{bdg(estado)}</div>'
                         f'</div>', unsafe_allow_html=True
                     )
@@ -417,7 +432,7 @@ def render_faturacao_empresas(user: dict):
                     elif estado == "pago":
                         st.markdown("<div style='padding-top:12px;text-align:center;font-size:13px;color:#16A34A'>✅ Liquidado</div>", unsafe_allow_html=True)
 
-    st.html(div())
+    st.html(_divider())
 
     # ---- EXPORT ----
     if fat_list:
