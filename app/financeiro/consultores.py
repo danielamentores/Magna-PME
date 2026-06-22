@@ -2,6 +2,7 @@
 from __future__ import annotations
 import streamlit as st
 from app.financeiro.helpers import (
+    mostrar_erro, mostrar_sucesso, mostrar_aviso, mostrar_info,
     eur, ptag, bdg, kpi_h, sec, div, CORES, BGS,
     ordenar, fil_proj, fil_datas, excel_bytes, extrair_pdf,
     guardar_comprovativo, notificar_rejeicao, reg_hist,
@@ -462,15 +463,15 @@ def render_consultores_financeiro(user):
 
     st.html(
         '<div class="fin-kpi-row">'
-        +kpi_h("⏳ Faturas a aprovar", str(n_pend), "submetidas pelos Consultores","a")
-        +kpi_h("📄 NH emitidas",       str(n_nh),   "pela Gestora","b")
+        +kpi_h("⏳ Faturas a aprovar", str(n_pend), "submetidas pelos consultores","a")
+        +kpi_h("📄 NH emitidas",       str(n_nh),   "pela gestora","b")
         +'</div>'
     )
     st.html(div())
 
     # ---- FATURAS A APROVAR ----
     st.markdown(sec(f"⏳ Faturas de consultores a aprovar ({n_pend})",
-        "Faturas submetidas após emissão de NH pela Gestora."), unsafe_allow_html=True)
+        "Faturas submetidas após emissão de NH pela gestora."), unsafe_allow_html=True)
 
     if not fat_pendentes:
         st.html('<div class="fin-empty">✅ Nenhuma fatura de consultor pendente.</div>')
@@ -487,7 +488,7 @@ def render_consultores_financeiro(user):
             nh_assoc = next((n for n in nh_emitidas if n.get("consultor_id")==row.get("consultor_id")),"—")
             nh_txt = ""
             if isinstance(nh_assoc,dict):
-                nh_txt = f'<div style="font-size:12px;color:#2563EB;margin-top:3px">📄 NH associada: {nh_assoc.get("valor","—")} € — emitida pela Gestora em {str(nh_assoc.get("data_emissao") or nh_assoc.get("created_at","—"))[:10]}</div>'
+                nh_txt = f'<div style="font-size:12px;color:#2563EB;margin-top:3px">📄 NH associada: {nh_assoc.get("valor","—")} € — emitida pela gestora em {str(nh_assoc.get("data_emissao") or nh_assoc.get("created_at","—"))[:10]}</div>'
 
             ci, ca = st.columns([5, 3])
             with ci:
