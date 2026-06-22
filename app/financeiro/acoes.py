@@ -279,7 +279,7 @@ def render_acoes(user: dict):
             # ── Cabeçalho ──
             '<div style="padding:12px 18px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between">' +
             f'<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="font-weight:700;font-size:14px;color:#1A1F2E">{codigo}</span>{ptag(proj)}{bdg(est)}</div><div style="font-size:12px;color:#4B5263">{nome[:65]} · <span style="color:#8B94A3">{empresa}</span></div></div>' +
-            f'<div style="text-align:right;font-size:12px;color:#8B94A3;flex-shrink:0;margin-left:16px"><span style="color:#2A7A8C;font-weight:600">{vol_display}</span> · {fc} form. · {dim or "—"}</div>' +
+            f'<div style="text-align:right;font-size:12px;color:#8B94A3;flex-shrink:0;margin-left:16px"><span style="color:#2A7A8C;font-weight:600">Volume certificado: {vol}h ({ch}h × {fc} formandos certificados)</span> · Dimensão: {dim or "—"}</div>' +
             '</div>' +
 
             # ── Grid 6 colunas: consultor | formador | M&T recebe | M&T fatura | Empresa recebe | Margem ──
