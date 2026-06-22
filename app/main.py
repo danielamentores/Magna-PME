@@ -224,41 +224,28 @@ def _render_sidebar(user: dict):
     label = perfil_labels.get(user["role"], user["role"])
 
     with st.sidebar:
-        # Marca
         st.markdown("### Magna PME")
         st.caption("Gestão de Formação")
         st.divider()
 
-        # Utilizador
         st.markdown(f"**{icon}  {user['nome']}**")
         st.caption(label)
         st.divider()
 
-        # Data / hora
         agora = datetime.now()
         st.caption(f"📅 {agora.strftime('%d %b %Y')}  ·  ⏰ {agora.strftime('%H:%M')}")
 
-        # Estado da BD
         sb_ok, sb_label = _supabase_status()
         st.caption(f"{'🟢' if sb_ok else '🟠'} BD {sb_label}")
 
-        # Sair
         if st.button("⎋  Sair da sessão", use_container_width=True, key="btn_sair"):
             st.session_state.user = None
             st.rerun()
 
         st.divider()
-        st.caption("🚧 Ambiente de Teste · v0.1-beta")
+        st.caption("v0.1-beta")
         st.caption("Mentores & Tutores © 2026")
 
-# ---------------------------------------------------------------------------
-# BANNER TESTE
-# ---------------------------------------------------------------------------
-def _banner_teste():
-    st.warning(
-        "🚧 **Ambiente de teste** — os dados apresentados são fictícios. "
-        "Não realizar operações reais nesta versão."
-    )
 
 # ---------------------------------------------------------------------------
 # CABEÇALHO DE PÁGINA
@@ -270,6 +257,7 @@ def _page_header(user: dict, titulo: str, subtitulo: str = ""):
     st.header(titulo)
     st.caption(sub)
     st.divider()
+
 
 # ---------------------------------------------------------------------------
 # LOGIN
@@ -284,13 +272,10 @@ def _login_simulado():
         "financeiro":     {"icon": "💶", "label": "Financeiro",        "desc": "Gestão Financeira e Faturação",                          "nome": "Financeiro",  "email": "financeiro@demo.pt"},
     }
 
-    # Única CSS do login: esconder a sidebar (é estrutural, não é "estilo")
     st.markdown('<style>[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
-    # Centrar numa coluna estreita usando layout nativo (sem CSS de tamanhos)
     _, centro, _ = st.columns([1, 2, 1])
     with centro:
-        # Logo
         logo = next((p for p in ["docs/logo_magna_pme.png", "app/assets/logo.png",
                                   "app/logo.png", "logo.png"] if Path(p).exists()), None)
         if logo:
@@ -308,8 +293,8 @@ def _login_simulado():
             st.caption(info["desc"])
 
         st.divider()
-        st.warning("🚧 Ambiente de Teste · v0.1-beta")
         st.caption("🔒 Login OAuth Google em implementação")
+
 
 # ---------------------------------------------------------------------------
 # MAIN
@@ -327,11 +312,7 @@ def main():
     user = st.session_state.user
     _render_sidebar(user)
 
-    st.markdown("""
-    <div style="padding:1.5rem 2rem 0">
-    """, unsafe_allow_html=True)
-
-    _banner_teste()
+    st.markdown('<div style="padding:1.5rem 2rem 0">', unsafe_allow_html=True)
 
     role = user["role"]
     if role == "formador":
