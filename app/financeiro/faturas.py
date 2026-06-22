@@ -41,9 +41,7 @@ _MOCK_PRE = [
     {"id":"f3","numero_fatura":"FT2026/0150","valor":1800,"estado":"submetida","erro_leitura":"Valor diverge do contrato","created_at":"2026-06-13","ficheiro_url":None,"profiles":{"nome":"Luís Cardoso","email":"luis@demo.pt"},"acoes":{"nome":"PRODUTECH"}},
 ]
 _MOCK_VENC = [
-    {"id":"v1","numero_fatura":"FT2026/0110","valor":1800,"prazo_pagamento":"2026-06-02","data_fatura":"2026-05-02","atraso":14,"profiles":{"nome":"João Silva","email":"joao@demo.pt"},"acoes":{"nome":"MENTORES"}},
-    {"id":"v2","numero_fatura":"FT2026/0108","valor":2600,"prazo_pagamento":"2026-06-08","data_fatura":"2026-05-08","atraso":8,"profiles":{"nome":"Rui Mendes","email":"rui@demo.pt"},"acoes":{"nome":"PRODUTECH"}},
-    {"id":"v3","numero_fatura":"FT2026/0105","valor":1400,"prazo_pagamento":"2026-06-12","data_fatura":"2026-05-12","atraso":4,"profiles":{"nome":"Pedro Costa","email":"pedro@demo.pt"},"acoes":{"nome":"CALÇADO"}},
+    {"id":"v1","numero_fatura":"FT40","valor":3321.34,"prazo_pagamento":"2026-06-08","data_fatura":"2026-05-08","atraso":8,"profiles":{"nome":"Winet Consulting, Lda","email":"winet@demo.pt"},"acoes":{"nome":"PRODUTECH"}},
 ]
 _MOCK_AV = [
     {"id":"a1","numero_fatura":"FT2026/0142","valor":3200,"prazo_pagamento":"2026-06-21","data_fatura":"2026-06-01","dias":5,"profiles":{"nome":"João Silva","email":"joao@demo.pt"},"acoes":{"nome":"MENTORES"}},
