@@ -1,5 +1,7 @@
 """Tab Projetos Clusters."""
 import streamlit as st
+import io
+import pandas as pd
 from app import db_coordenador as db
 
 # ---------------------------------------------------------------------------
@@ -15,19 +17,19 @@ VOLUMES = {
 
 ACOES_PROJETO = {
     "APCMC": [
-        {"codigo":"APCMC.01.PCE","nome":"Escalada e desmanche de árvores","empresa":"Like Garden","estado":"fechada","pct":100},
-        {"codigo":"APCMC.02.PCE","nome":"Segurança na construção civil","empresa":"CAMOESAS, Lda","estado":"a_decorrer","pct":65},
-        {"codigo":"APCMC.03.PCE","nome":"Gestão de emergências","empresa":"Fenabel, S.A","estado":"a_decorrer","pct":30},
-        {"codigo":"APCMC.04.PCE","nome":"Literacia digital","empresa":"J. Moreira da Silva","estado":"fechada","pct":100},
+        {"codigo":"APCMC.01.PCE","nome":"Escalada e desmanche de árvores","empresa":"Like Garden","estado":"fechada","pct":100,"formandos":18,"horas":50},
+        {"codigo":"APCMC.02.PCE","nome":"Segurança na construção civil","empresa":"CAMOESAS, Lda","estado":"a_decorrer","pct":65,"formandos":12,"horas":16},
+        {"codigo":"APCMC.03.PCE","nome":"Gestão de emergências","empresa":"Fenabel, S.A","estado":"a_decorrer","pct":30,"formandos":10,"horas":12},
+        {"codigo":"APCMC.04.PCE","nome":"Literacia digital","empresa":"J. Moreira da Silva","estado":"fechada","pct":100,"formandos":15,"horas":30},
     ],
     "ANIET": [
-        {"codigo":"ANIET.01.PCE","nome":"Operar equipamentos de elevação","empresa":"Mecanidráulica","estado":"fechada","pct":100},
-        {"codigo":"ANIET.02.PCE","nome":"Operações florestais com motosserra","empresa":"Forestcorte","estado":"a_decorrer","pct":50},
+        {"codigo":"ANIET.01.PCE","nome":"Operar equipamentos de elevação","empresa":"Mecanidráulica","estado":"fechada","pct":100,"formandos":16,"horas":35},
+        {"codigo":"ANIET.02.PCE","nome":"Operações florestais com motosserra","empresa":"Forestcorte","estado":"a_decorrer","pct":50,"formandos":9,"horas":24},
     ],
     "MENTORES": [
-        {"codigo":"MENT.01.PCE","nome":"Liderança e gestão de equipas","empresa":"Fenabel, S.A","estado":"fechada","pct":100},
-        {"codigo":"MENT.02.PCE","nome":"Técnicas de negociação","empresa":"Fenabel, S.A","estado":"a_decorrer","pct":75},
-        {"codigo":"MENT.03.PCE","nome":"Excel avançado","empresa":"Empresa Alfa, Lda","estado":"planeada","pct":0},
+        {"codigo":"MENT.01.PCE","nome":"Liderança e gestão de equipas","empresa":"Fenabel, S.A","estado":"fechada","pct":100,"formandos":14,"horas":12},
+        {"codigo":"MENT.02.PCE","nome":"Técnicas de negociação","empresa":"Fenabel, S.A","estado":"a_decorrer","pct":75,"formandos":10,"horas":16},
+        {"codigo":"MENT.03.PCE","nome":"Excel avançado","empresa":"Empresa Alfa, Lda","estado":"planeada","pct":0,"formandos":0,"horas":21},
     ],
 }
 
@@ -84,6 +86,12 @@ def _eur(v):
     try: return f"€\u202f{float(v):,.2f}".replace(",","X").replace(".",",").replace("X",".")
     except: return "€ —"
 
+def _excel_bytes(df):
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as w:
+        df.to_excel(w, index=False, sheet_name="Ações")
+    return buf.getvalue()
+
 def _bdg_acao(estado):
     M={"fechada":("#F0FDF4","#16A34A","✅ Fechada"),
        "a_decorrer":("#EEF3FD","#2563EB","🔵 A decorrer"),
@@ -131,7 +139,32 @@ def _execucao():
         st.progress(min(pct/100, 1.0))
 
         st.html(div())
+st.markdown("**📋 Lista de ações (exportável)**")
+        ESTADO_LBL = {"fechada": "Fechada", "a_decorrer": "A decorrer", "planeada": "Planeada"}
+        linhas = []
+        for a in acoes:
+            f = a.get("formandos", 0)
+            h = a.get("horas", 0)
+            linhas.append({
+                "Código": a["codigo"],
+                "Ação": a["nome"],
+                "Empresa": a["empresa"],
+                "Estado": ESTADO_LBL.get(a["estado"], a["estado"]),
+                "Formandos": f,
+                "Horas": h,
+                "Volume": h * f,
+            })
+        df_acoes = pd.DataFrame(linhas)
+        st.dataframe(df_acoes, hide_index=True, use_container_width=True)
+        st.download_button(
+            "⬇️ Descarregar lista (Excel)",
+            data=_excel_bytes(df_acoes),
+            file_name=f"acoes_{projeto}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=f"dl_acoes_{projeto}",
+        )
 
+        st.html(div())
         if fechadas:
             st.markdown("**✅ Ações fechadas**")
             for a in fechadas:
