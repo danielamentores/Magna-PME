@@ -410,35 +410,43 @@ def render_faturacao_empresas(user: dict):
                 # Modo de registo: manual ou por leitura de PDF
                 modo_key = f"modo_fat_{fe_id}"
                 if modo_key not in st.session_state:
-                    st.session_state[modo_key] = "manual"
+                    st.session_state[modo_key] = "none"
 
-                col_m1, col_m2, _ = st.columns([2, 2, 4])
-                with col_m1:
-                    if st.button("✏️ Preencher manualmente", key=f"btn_manual_{fe_id}",
-                                 use_container_width=True,
-                                 type="primary" if st.session_state[modo_key]=="manual" else "secondary"):
-                        st.session_state[modo_key] = "manual"; st.rerun()
-                with col_m2:
-                    if st.button("📄 Fazer upload do PDF", key=f"btn_pdf_{fe_id}",
-                                 use_container_width=True,
-                                 type="primary" if st.session_state[modo_key]=="pdf" else "secondary"):
-                        st.session_state[modo_key] = "pdf"; st.rerun()
+                # Botões de escolha — só mostram se nenhum modo activo
+                if st.session_state[modo_key] == "none":
+                    col_m1, col_m2, _ = st.columns([2, 2, 4])
+                    with col_m1:
+                        if st.button("✏️ Submissão manual", key=f"btn_manual_{fe_id}",
+                                     use_container_width=True):
+                            st.session_state[modo_key] = "manual"; st.rerun()
+                    with col_m2:
+                        if st.button("📄 Submeter fatura PDF", key=f"btn_pdf_{fe_id}",
+                                     use_container_width=True, type="primary"):
+                            st.session_state[modo_key] = "pdf"; st.rerun()
+                else:
+                    # Botão para voltar atrás
+                    if st.button("← Cancelar", key=f"btn_back_{fe_id}"):
+                        st.session_state[modo_key] = "none"; st.rerun()
 
                 if st.session_state[modo_key] == "pdf":
-                    # Upload + leitura automática
-                    pdf_up = st.file_uploader("Carrega o PDF da fatura", type=["pdf"],
-                                              key=f"pdf_fe_{fe_id}")
+                    # Upload + leitura automática — extrai Nº Fatura, Data e Valor
+                    dados_key = f"dados_pdf_{fe_id}"
+                    pdf_up = st.file_uploader("Carrega o PDF da fatura emitida à empresa",
+                                              type=["pdf"], key=f"pdf_fe_{fe_id}")
                     if pdf_up:
-                        with st.spinner("A ler o PDF..."):
-                            from app.financeiro.helpers import extrair_pdf
-                            dados = extrair_pdf(pdf_up.read())
+                        if dados_key not in st.session_state:
+                            with st.spinner("A ler o PDF..."):
+                                from app.financeiro.helpers import extrair_pdf
+                                st.session_state[dados_key] = extrair_pdf(pdf_up.read())
+                        dados = st.session_state[dados_key]
                         if dados.get("erro"):
-                            st.error(f"Erro na leitura: {dados['erro']}")
+                            st.error(f"Não foi possível extrair: {dados['erro']}")
+                            st.caption("Usa a submissão manual em alternativa.")
                         else:
-                            # Pré-preencher com dados extraídos, editáveis
-                            col_nf, col_df, col_btn = st.columns([3, 2, 2])
+                            st.html('<div style="font-size:13px;color:#6B7280;margin-bottom:10px">Dados extraídos do PDF — confirma ou corrige antes de registar.</div>')
+                            col_nf, col_df, col_vr = st.columns(3)
                             with col_nf:
-                                n_fat_inp = st.text_input("Nº Fatura (extraído)",
+                                n_fat_inp = st.text_input("Nº Fatura",
                                     value=dados.get("numero_fatura") or "",
                                     key=f"nf_{fe_id}", placeholder="FT2026/E...")
                             with col_df:
@@ -448,40 +456,45 @@ def render_faturacao_empresas(user: dict):
                                         from datetime import date as _date
                                         df_val = _date.fromisoformat(dados["data_fatura"])
                                     except: pass
-                                d_fat_inp = st.date_input("Data (extraída)", value=df_val,
+                                d_fat_inp = st.date_input("Data da fatura", value=df_val,
                                                            key=f"df_{fe_id}", format="DD/MM/YYYY")
-                            with col_btn:
-                                st.markdown("<div style='margin-top:24px'>", unsafe_allow_html=True)
-                                if st.button("✅ Registar fatura", key=f"fi_{fe_id}",
-                                             use_container_width=True, type="primary"):
-                                    if n_fat_inp:
-                                        upd = {"estado":"fatura_emitida","numero_fatura":n_fat_inp,
-                                               "data_fatura":str(d_fat_inp) if d_fat_inp else None}
-                                        if _atualizar_fat_empresa(fe_id, upd):
-                                            st.session_state.pop(modo_key, None)
-                                            st.toast(f"Fatura registada para {empresa}!"); st.rerun()
-                                    else: st.warning("Confirma o número da fatura.")
-                                st.markdown("</div>", unsafe_allow_html=True)
-
-                            if dados.get("valor"):
-                                from app.financeiro.helpers import _e as _eh
-                                st.html(f'<div style="font-size:12px;color:#8B94A3;margin-top:4px">Valor extraído do PDF: <strong style="color:#4B5263">{_eh(dados["valor"])}</strong></div>')
+                            with col_vr:
+                                val_pdf = float(dados.get("valor") or valor)
+                                val_fat_inp = st.number_input("Valor (€)", min_value=0.0,
+                                    value=val_pdf, step=0.01, format="%.2f", key=f"vf_{fe_id}")
+                            if st.button("✅ Registar fatura", key=f"fi_{fe_id}",
+                                         use_container_width=True, type="primary"):
+                                if n_fat_inp:
+                                    upd = {"estado":"fatura_emitida","numero_fatura":n_fat_inp,
+                                           "data_fatura":str(d_fat_inp) if d_fat_inp else None,
+                                           "valor":float(val_fat_inp)}
+                                    if _atualizar_fat_empresa(fe_id, upd):
+                                        st.session_state.pop(modo_key, None)
+                                        st.session_state.pop(dados_key, None)
+                                        st.toast(f"Fatura registada para {empresa}!"); st.rerun()
+                                else: st.warning("Confirma o número da fatura.")
+                    else:
+                        st.session_state.pop(dados_key, None)
 
                 else:
                     # Registo manual
-                    col_nf, col_df, col_btn = st.columns([3, 2, 2])
+                    col_nf, col_df, col_vr, col_btn = st.columns([3, 2, 2, 2])
                     with col_nf:
                         n_fat_inp = st.text_input("Nº Fatura", key=f"nf_{fe_id}",
-                                                   placeholder="FT2026/E...", label_visibility="visible")
+                                                   placeholder="FT2026/E...")
                     with col_df:
                         d_fat_inp = st.date_input("Data", key=f"df_{fe_id}", value=None, format="DD/MM/YYYY")
+                    with col_vr:
+                        val_fat_inp = st.number_input("Valor (€)", min_value=0.0,
+                            value=float(valor), step=0.01, format="%.2f", key=f"vf_m_{fe_id}")
                     with col_btn:
                         st.markdown("<div style='margin-top:24px'>", unsafe_allow_html=True)
                         if st.button("📄 Registar fatura", key=f"fi_{fe_id}",
                                      use_container_width=True, type="primary"):
                             if n_fat_inp:
                                 upd = {"estado":"fatura_emitida","numero_fatura":n_fat_inp,
-                                       "data_fatura":str(d_fat_inp) if d_fat_inp else None}
+                                       "data_fatura":str(d_fat_inp) if d_fat_inp else None,
+                                       "valor_fatura":float(val_fat_inp)}
                                 if _atualizar_fat_empresa(fe_id, upd):
                                     st.session_state.pop(modo_key, None)
                                     st.toast(f"Fatura registada para {empresa}!"); st.rerun()
