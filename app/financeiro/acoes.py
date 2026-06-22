@@ -16,6 +16,11 @@ except Exception:
 # ---------------------------------------------------------------------------
 # FÓRMULAS FINANCEIRAS
 # ---------------------------------------------------------------------------
+def calc_formador(formandos_cert: int, horas: int = 25) -> float:
+    """Valor do formador = horas × taxa (20€/h se <13 formandos, 25€/h se >=13)."""
+    taxa = 25.0 if formandos_cert >= 13 else 20.0
+    return round(horas * taxa, 2)
+
 def calc_consultor(formandos_cert: int, vol_cert: float) -> float:
     """Valor da NH do consultor = volume_certificado × taxa."""
     if not vol_cert:
@@ -67,8 +72,8 @@ _MOCK_ACOES = [
         "nome": "Escalada e desmanche de árvores com motosserra",
         "empresa_cliente": "Like Garden", "projeto": "MENTORES",
         "consultor_nome": "Etapas Pioneiras, Lda",
-        "formador_nome": "Ana Silva", "valor_fatura_formador": 1800.0,
-        "dimensao": "Pequena", "volume_horas": 50,
+        "formador_nome": "Ana Silva", "valor_fatura_formador": None,
+        "dimensao": "Pequena", "volume_horas": 25,
         "formandos_certificados": 18, "formandos_desf": 0, "formandos_nao_desf": 0,
         "estado": "fechada",
     },
@@ -194,7 +199,7 @@ def render_acoes(user: dict):
     def _vol(a): return int(a.get("volume_horas") or 0) * int(a.get("formandos_certificados") or 0)
     total_compete   = sum(calc_compete(a.get("projeto",""), _vol(a)) for a in acoes)
     total_consultor = sum(calc_consultor(a.get("formandos_certificados",0), _vol(a)) for a in acoes)
-    total_formador  = sum(a.get("valor_fatura_formador") or 0 for a in acoes)
+    total_formador  = sum(a.get("valor_fatura_formador") or calc_formador(a.get("formandos_certificados",0), a.get("volume_horas",25)) for a in acoes)
     total_fat_emp   = sum(calc_faturado_empresa(
         a.get("dimensao",""), _vol(a),
         a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
@@ -235,7 +240,8 @@ def render_acoes(user: dict):
         vol      = ch * fc  # volume certificado = carga_horária × formandos_certificados
         consultor= a.get("consultor_nome") or "—"
         formador = a.get("formador_nome") or "—"
-        val_form = a.get("valor_fatura_formador")
+        val_form_contrato = calc_formador(fc, ch if ch else 25)
+        val_form = a.get("valor_fatura_formador") or val_form_contrato
 
         v_cons   = calc_consultor(fc, vol)
         v_comp   = calc_compete(proj, vol)
@@ -257,10 +263,16 @@ def render_acoes(user: dict):
                     f'</div>'
                 )
             with col_est:
-                st.html(f'<div style="text-align:right;padding-top:4px">{bdg(est)}'
-                        f'<div style="font-size:11px;color:#8B94A3;margin-top:3px">'
-                        f'{fc} formandos cert. · {dim or "—"}'
-                        f'</div></div>')
+                vol_display = f"{ch}h × {fc} = {vol}" if ch and fc else "—"
+                st.html(
+                    f'<div style="text-align:right;padding-top:4px">{bdg(est)}'
+                    f'<div style="font-size:11px;color:#8B94A3;margin-top:3px">'
+                    f'{fc} formandos cert.</div>'
+                    f'<div style="font-size:11px;color:#2A7A8C;margin-top:1px">'
+                    f'Vol. cert.: {vol_display}</div>'
+                    f'<div style="font-size:11px;color:#8B94A3;margin-top:1px">{dim or "—"}'
+                    f'</div></div>'
+                )
 
             st.html('<div style="height:1px;background:#F0F2F5;margin:8px 0"></div>')
 
@@ -273,12 +285,15 @@ def render_acoes(user: dict):
                 f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">{consultor}</div>'
                 f'<div style="font-weight:700;font-size:14px;color:#2563EB">{eur2(v_cons)}</div>'
             )
+            form_real = a.get("valor_fatura_formador")
+            form_label = eur2(form_real) + " €" if form_real else f"Contrato: {eur2(val_form_contrato)} €"
+            form_cor   = "#2563EB" if form_real else "#8B94A3"
             c2.html(
                 f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
                 f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Formador</div>'
                 f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">{formador}</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#2563EB">'
-                f'{_val_cell(val_form,"Aguarda fatura")}</div>'
+                f'<div style="font-weight:700;font-size:14px;color:{form_cor}">'
+                f'{form_label}</div>'
             )
             c3.html(
                 f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
