@@ -79,7 +79,7 @@ def _card(row,tipo,idx,user_nome):
             f'<div class="cd">Emissão {df} · Prazo {dp}</div>'
             f'</div>'
             f'<div style="text-align:right;min-width:85px">'
-            f'<div class="cv">{eur(v)}</div>{dias_h}'
+            f'<div class="cv">{_e(v)}</div>{dias_h}'
             f'</div></div>', unsafe_allow_html=True)
     with col_b:
         show_key = f"show_comp_{tipo}_{idx}_{fid}"
@@ -189,7 +189,7 @@ def render_alertas(user):
                     f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
                     f'<span style="font-weight:700;font-size:14px">{n}</span>{ptag(p)}{pdf_link}'
                     f'</div>'
-                    f'<div style="font-size:13px;color:#4B5263"><b>Formador:</b> {f} &nbsp;·&nbsp; <b>Valor:</b> {eur(v)}</div>'
+                    f'<div style="font-size:13px;color:#4B5263"><b>Formador:</b> {f} &nbsp;·&nbsp; <b>Valor:</b> {_e(v)}</div>'
                     f'<div class="err">⚠️ {erro}</div>'
                     f'<div class="ds">Submetida: {ds}</div>'
                     f'</div>', unsafe_allow_html=True)
@@ -226,7 +226,7 @@ def render_alertas(user):
             else:
                 c1,c2,c3,c4=st.columns(4)
                 c1.metric("Nº Fatura",d.get("numero_fatura") or "—"); c2.metric("NIF",d.get("nif_emitente") or "—")
-                c3.metric("Valor",eur(d.get("valor") or 0)); c4.metric("Data",d.get("data_fatura") or "—")
+                c3.metric("Valor",_e(d.get("valor") or 0)); c4.metric("Data",d.get("data_fatura") or "—")
 
     st.html(div())
 
@@ -237,7 +237,7 @@ def render_alertas(user):
         st.html('<div class="fin-empty">Nenhuma fatura vencida para este filtro.</div>')
     else:
         for i,row in enumerate(pagv): _card(row,"vencida",pv*PAGE+i,user_nome)
-        st.markdown(f"**Total vencido: {eur(tv)}**")
+        st.markdown(f"**Total vencido: {_e(tv)}**")
         tp_=max(1,(len(venc)+PAGE-1)//PAGE)
         if tp_>1:
             c1,c2,c3=st.columns([1,2,1])
@@ -255,7 +255,7 @@ def render_alertas(user):
         st.html('<div class="fin-empty">Nenhuma fatura a vencer para este filtro.</div>')
     else:
         for i,row in enumerate(paga): _card(row,"avencer",pa*PAGE+i,user_nome)
-        st.markdown(f"**Total a vencer: {eur(ta)}**")
+        st.markdown(f"**Total a vencer: {_e(ta)}**")
         tp_=max(1,(len(av)+PAGE-1)//PAGE)
         if tp_>1:
             c1,c2,c3=st.columns([1,2,1])
@@ -271,14 +271,14 @@ def render_alertas(user):
         st.markdown(sec("Top 5 formadores pendentes"),unsafe_allow_html=True)
         h=""
         for i,row in enumerate(top5):
-            h+=f'<div class="fin-card" style="padding:10px 14px"><span style="font-size:12px;font-weight:700;color:#8B94A3;min-width:22px">#{i+1}</span><span style="flex:1;font-size:13px">{row["formador"]}</span><span style="font-weight:700;font-size:14px">{eur(row["valor"])}</span></div>'
+            h+=f'<div class="fin-card" style="padding:10px 14px"><span style="font-size:12px;font-weight:700;color:#8B94A3;min-width:22px">#{i+1}</span><span style="flex:1;font-size:13px">{row["formador"]}</span><span style="font-weight:700;font-size:14px">{_e(row["valor"])}</span></div>'
         st.markdown(h,unsafe_allow_html=True)
     with cr:
         st.markdown(sec("Pendente por projeto"),unsafe_allow_html=True)
         h=""
         for row in pp:
             c=CORES.get(row["projeto"],"#888")
-            h+=f'<div class="fin-card" style="padding:10px 14px"><span style="width:8px;height:8px;border-radius:50%;background:{c};display:inline-block;margin-right:8px;flex-shrink:0"></span><span style="flex:1;font-size:13px">{row["projeto"]}</span><span style="font-weight:700;font-size:14px">{eur(row["valor"])}</span></div>'
+            h+=f'<div class="fin-card" style="padding:10px 14px"><span style="width:8px;height:8px;border-radius:50%;background:{c};display:inline-block;margin-right:8px;flex-shrink:0"></span><span style="flex:1;font-size:13px">{row["projeto"]}</span><span style="font-weight:700;font-size:14px">{_e(row["valor"])}</span></div>'
         st.markdown(h,unsafe_allow_html=True)
 
     st.html(div())
