@@ -55,14 +55,17 @@ def render(user: dict):
     st.markdown(f"# Bem-vindo, {user['nome']}{badge}", unsafe_allow_html=True)
     st.caption("Perfil: Financeiro")
 
-    label_fat  = f"🧾 Faturas ({n_pre})" if n_pre > 0 else "🧾 Faturas"
-    label_cons = f"🤝 Consultores & Ações ({n_fc})" if n_fc > 0 else "🤝 Consultores & Ações"
+    label_fat   = f"🧾 Faturas ({n_pre})" if n_pre > 0 else "🧾 Faturas"
+    label_cons  = f"🤝 Consultores & Ações ({n_fc})" if n_fc > 0 else "🤝 Consultores & Ações"
+    n_alertas   = len([a for a in st.session_state.get("alertas",[]) if not a.get("lido") and a.get("para")=="Financeiro"])
+    label_alert = f"🔔 Alertas ({n_alertas})" if n_alertas > 0 else "🔔 Alertas"
 
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📊 Dashboard",
         label_fat,
         label_cons,
         "🏢 Faturação Empresas",
+        label_alert,
     ])
 
     with tab1:
@@ -80,3 +83,7 @@ def render(user: dict):
     with tab4:
         from app.financeiro.faturacao_empresas import render_faturacao_empresas
         render_faturacao_empresas(user)
+
+    with tab5:
+        from app.financeiro.alertas import render_alertas_tab
+        render_alertas_tab()
