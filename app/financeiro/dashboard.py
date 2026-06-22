@@ -104,11 +104,18 @@ def render_dashboard(user):
         )
 
     # ── KPIs ──
+    kpi_pago_label = {
+        "Este mês":     "💳 Pago este mês",
+        "Mês anterior": "💳 Pago no mês anterior",
+        "Este ano":     "💳 Pago este ano",
+        "Tudo":         "💳 Total pago",
+    }.get(periodo, "💳 Pago no período")
+
     st.html(
         '<div class="fin-kpi-row">'
         + kpi_h("🔍 Pré-aprovação",    _e(tp),    f"{n_pre} faturas",  "a")
         + kpi_h("✅ Aprovado a pagar",  _e(ta),    f"{n_apr} faturas",  "g")
-        + kpi_h("💳 Pago este mês",     _e(tpago), f"{n_pago} faturas", "b")
+        + kpi_h(kpi_pago_label,         _e(tpago), f"{n_pago} faturas", "b")
         + kpi_h("🚨 Vencido",           _e(tv),    f"{n_venc} faturas", "r")
         + '</div>'
     )
