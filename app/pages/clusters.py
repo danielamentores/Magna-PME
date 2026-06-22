@@ -255,8 +255,8 @@ def _empresas():
                 c1,c2,c3,c4 = st.columns(4)
                 c1.metric("Certificados", f"{a['certificados']}/{a['formandos']}")
                 c2.metric("Horas", f"{a['horas']}h")
-                c3.metric("Valor COMPETE", _eur(a["valor_compete"]))
-                c4.metric("Valor M&T", _eur(a["valor_mentores"]))
+                c3.metric("A Receber do COMPETE2030", _eur(a["valor_compete"]))
+                c4.metric("A Pagar à M&T (30%)", _eur(a["valor_mentores"]))
                 st.html(
                     f'<div style="display:flex;gap:20px;font-size:12px;color:#4B5263;margin-top:4px">'
                     f'<span>{r_ico} Reembolso COMPETE</span>'
