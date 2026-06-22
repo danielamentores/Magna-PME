@@ -301,7 +301,7 @@ def render_acoes(user: dict):
             f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5"><div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Empresa recebe</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE2030</div><div style="font-size:15px;font-weight:700;color:#6B7280">{_ed(v_emp_r) if v_emp_r else "—"}</div></div>' +
 
             # Margem
-            f'<div style="padding:12px 14px;background:{mg_bg}"><div style="font-size:10px;color:{m_cor};font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Margem M&T</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE+Emp.−(cons.+form.)</div><div style="font-size:16px;font-weight:700;color:{m_cor}">{_ed(margem) if v_comp else "—"}</div></div>' +
+            f'<div style="padding:12px 14px;background:{mg_bg}"><div style="font-size:10px;color:{m_cor};font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Margem M&T</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE2030 + Faturação às Empresas − Custo Consultor - Custo Formador)</div><div style="font-size:16px;font-weight:700;color:{m_cor}">{_ed(margem) if v_comp else "—"}</div></div>' +
 
             '</div></div>'
         )
