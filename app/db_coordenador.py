@@ -53,3 +53,18 @@ def definir_comentario(acao_id: str, texto: str):
 
 def comentario(acao_id: str) -> str:
     return comentarios().get(acao_id, "")
+# --- Reembolsos (estado partilhado gestora ↔ coordenadora) ---
+_CHAVE_RC = "reembolso_candidatos"
+_CHAVE_RP = "reembolso_problemas"
+
+
+def reembolso_candidatos() -> dict:
+    return st.session_state.setdefault(_CHAVE_RC, {})
+
+
+def reembolso_problemas() -> dict:
+    return st.session_state.setdefault(_CHAVE_RP, {})
+
+
+def marcar_problema_reembolso(key: str, motivo: str):
+    reembolso_problemas()[key] = motivo
