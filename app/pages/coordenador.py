@@ -26,10 +26,12 @@ def render(user: dict):
     st.header(f"Bem-vindo, {user['nome']}")
     st.caption("Perfil: Coordenador")
 
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📊 Projetos Clusters",
         "📋 Projeto Formação Ação",
         "🏪 Projeto Comércio e Serviços",
+        "Ações em Reembolso",
+        "Alertas"
     ])
     with tab1:
         from app.pages.clusters import render as r; r()
@@ -37,6 +39,10 @@ def render(user: dict):
         from app.pages.formacao import render as r; r()
     with tab3:
         from app.pages.comercio import render as r; r()
+    with tab4:
+        st.info("Confirmação de ações em reembolso")
+    with tab5:
+        st.info("Sem alertas")
 # --- Reembolsos (estado partilhado gestora ↔ coordenadora) ---
 _CHAVE_RC = "reembolso_candidatos"
 _CHAVE_RP = "reembolso_problemas"
