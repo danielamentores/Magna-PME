@@ -117,42 +117,50 @@ _MOCK_FAT_EMPRESAS = [
      "dimensao":"Pequena","volume":900.0,"formandos_desf":0,"formandos_nao_desf":0,
      "valor_30pct":2025.00,"estado":"pago","numero_fatura":"FT2026/E001",
      "data_fatura":"2026-04-15","data_pagamento":"2026-05-10","valor_recebido":2025.00,
-     "notas":"","projeto":"MENTORES","codigo":"LIKE GARDEN.2.PCE"},
+     "notas":"","projeto":"MENTORES","codigo":"LIKE GARDEN.2.PCE",
+     "consultor_nome":"Consultor 1","formador_nome":"Formador 1"},
     {"id":"fe2","acao_id":"a2","empresa":"CAMOESAS, LDA","nif_empresa":"508392594",
      "dimensao":"Pequena","volume":384.0,"formandos_desf":0,"formandos_nao_desf":0,
      "valor_30pct":864.00,"estado":"fatura_emitida","numero_fatura":"FT2026/E002",
      "data_fatura":"2026-05-02","data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"ANIET","codigo":"CAMOESAS.03.PCE"},
+     "notas":"","projeto":"ANIET","codigo":"CAMOESAS.03.PCE",
+     "consultor_nome":"Consultor 1","formador_nome":"Formador 2"},
     {"id":"fe3","acao_id":"a3","empresa":"Fenabel, S.A","nif_empresa":"502815795",
      "dimensao":"Média","volume":224.0,"formandos_desf":8,"formandos_nao_desf":6,
      "valor_30pct":453.00,"estado":"fatura_emitida","numero_fatura":"FT2026/E003",
      "data_fatura":"2026-05-15","data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"MENTORES","codigo":"FENABEL.GEPSLT_16"},
+     "notas":"","projeto":"MENTORES","codigo":"FENABEL.GEPSLT_16",
+     "consultor_nome":"Consultor 2","formador_nome":"Formador 3"},
     {"id":"fe4","acao_id":"a4","empresa":"J. Moreira da Silva & Filhos S.A.","nif_empresa":"",
      "dimensao":"Média","volume":250.0,"formandos_desf":4,"formandos_nao_desf":6,
      "valor_30pct":315.00,"estado":"por_faturar","numero_fatura":None,
      "data_fatura":None,"data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"MENTORES","codigo":"JMS.PCE.01"},
+     "notas":"","projeto":"MENTORES","codigo":"JMS.PCE.01",
+     "consultor_nome":"Consultor 1","formador_nome":"Formador 4"},
     {"id":"fe5","acao_id":"a5","empresa":"Mecanidráulica","nif_empresa":"510033423",
      "dimensao":"Pequena","volume":704.0,"formandos_desf":0,"formandos_nao_desf":0,
      "valor_30pct":1584.00,"estado":"por_faturar","numero_fatura":None,
      "data_fatura":None,"data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"ANIET","codigo":"MECANIDRAULICA.2.PCE"},
+     "notas":"","projeto":"ANIET","codigo":"MECANIDRAULICA.2.PCE",
+     "consultor_nome":"Consultor 3","formador_nome":"Formador 5"},
     {"id":"fe6","acao_id":"a1","empresa":"Horto da Circunvalação","nif_empresa":"510575617",
      "dimensao":"Pequena","volume":144.0,"formandos_desf":0,"formandos_nao_desf":0,
      "valor_30pct":324.00,"estado":"por_faturar","numero_fatura":None,
      "data_fatura":None,"data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"MENTORES","codigo":"TALT_16"},
+     "notas":"","projeto":"MENTORES","codigo":"TALT_16",
+     "consultor_nome":"Consultor 2","formador_nome":"Formador 1"},
     {"id":"fe7","acao_id":"a2","empresa":"Forestcorte Portugal Exploração Florestal","nif_empresa":"505765667",
      "dimensao":"Média","volume":200.0,"formandos_desf":3,"formandos_nao_desf":5,
      "valor_30pct":225.00,"estado":"pago","numero_fatura":"FT2026/E004",
      "data_fatura":"2026-03-20","data_pagamento":"2026-04-18","valor_recebido":225.00,
-     "notas":"","projeto":"ANIET","codigo":"FORESTCORTE.2.PCE"},
+     "notas":"","projeto":"ANIET","codigo":"FORESTCORTE.2.PCE",
+     "consultor_nome":"Consultor 1","formador_nome":"Formador 3"},
     {"id":"fe8","acao_id":"a3","empresa":"ISTSTONE e TOPÁZIO FAVORITO","nif_empresa":"510731422",
      "dimensao":"Média","volume":168.0,"formandos_desf":5,"formandos_nao_desf":16,
      "valor_30pct":594.00,"estado":"fatura_emitida","numero_fatura":"FT2026/E005",
      "data_fatura":"2026-05-28","data_pagamento":None,"valor_recebido":None,
-     "notas":"","projeto":"ANIET","codigo":"GEOEMC_1"},
+     "notas":"","projeto":"ANIET","codigo":"GEOEMC_1",
+     "consultor_nome":"Consultor 3","formador_nome":"Formador 2"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -254,10 +262,10 @@ def render_faturacao_empresas(user: dict):
 
     st.html(
         '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px">'
-        + kpi_h("📋 POR FATURAR",    _e(t_pf), f"{n_pf} Ações", "a")
-        + kpi_h("📄 FATURA EMITIDA", _e(t_fi), f"{n_fi} Ações", "b")
-        + kpi_h("✅ PAGO",           _e(t_pg), f"{n_pg} Ações", "g")
-        + kpi_h("💰 TOTAL A RECEBER", _e(t_pf+t_fi), f"{n_pf+n_fi} por Cobrar", "r")
+        + kpi_h("📋 Por faturar",    _e(t_pf), f"{n_pf} ações", "a")
+        + kpi_h("📄 Fatura emitida", _e(t_fi), f"{n_fi} ações", "b")
+        + kpi_h("✅ Pago",           _e(t_pg), f"{n_pg} ações", "g")
+        + kpi_h("💰 Total a receber", _e(t_pf+t_fi), f"{n_pf+n_fi} por cobrar", "r")
         + '</div>'
     )
 
@@ -394,8 +402,12 @@ def render_faturacao_empresas(user: dict):
                 f'border-radius:10px;padding:16px 20px;margin-bottom:8px;display:flex;align-items:center;gap:16px">'
                 f'<div style="flex:1">'
                 f'<div style="font-weight:700;font-size:16px;color:#1A1F2E;margin-bottom:4px">{empresa}</div>'
-                f'<div style="margin-bottom:4px">{ptag(proj)}&nbsp;&nbsp;<span style="font-size:12px;color:#6B7280">{codigo} · {dim}</span></div>'
-                f'{f'<div style="font-size:13px;color:#4B5263;margin-top:2px">{fatura_info}</div>' if fatura_info else ""}'
+                f'<div style="margin-bottom:4px">{ptag(proj)}&nbsp;&nbsp;'
+                f'<span style="font-size:12px;color:#6B7280">{codigo} · {dim}</span></div>'
+                f'<div style="font-size:12px;color:#8B94A3;margin-top:2px">'
+                f'🤝 {row.get("consultor_nome") or "—"}&nbsp;&nbsp;·&nbsp;&nbsp;'
+                f'👤 {row.get("formador_nome") or "—"}</div>'
+                f'{f'<div style="font-size:13px;color:#4B5263;margin-top:3px">{fatura_info}</div>' if fatura_info else ""}'
                 f'{f'<div style="font-size:13px;color:#16A34A;font-weight:500;margin-top:2px">{pago_info}</div>' if pago_info else ""}'
                 f'</div>'
                 f'<div style="text-align:right;flex-shrink:0;min-width:110px">'
