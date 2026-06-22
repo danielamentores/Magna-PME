@@ -40,7 +40,7 @@ def render(user: dict):
     with tab3:
         from app.pages.comercio import render as r; r()
     with tab4:
-        st.info("Confirmação de ações em reembolso")
+        from app.pages.coord_reembolsos import render as r; r()
     with tab5:
         st.info("Sem alertas")
 # --- Reembolsos (estado partilhado gestora ↔ coordenadora) ---
