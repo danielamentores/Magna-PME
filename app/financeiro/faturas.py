@@ -204,7 +204,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── Aprovação manual ──
-    st.html(_sec(f"🔍 Aprovação manual — {len(pre)} pendente(s)", "Faturas cuja validação automática falhou. Analisa e aprova ou rejeita."))
+    st.html(_sec(f"🔍 Aprovação Manual — {len(pre)} pendente(s)", "Faturas cuja validação automática falhou. Analisa e aprova ou rejeita."))
     if not pre:
         st.html(_empty("✅ Nenhuma fatura pendente de aprovação manual."))
     else:
@@ -252,7 +252,7 @@ def render_alertas(user):
                         st.warning("Escreve um motivo de rejeição.")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-    with st.expander("🔎 Leitura manual de fatura PDF", expanded=False):
+    with st.expander("🔎 Leitura Manual de Fatura PDF", expanded=False):
         st.html('<div style="font-size:13px;color:#6B7280;margin-bottom:12px">Carrega um PDF para extrair automaticamente os dados da fatura.</div>')
         up = st.file_uploader("Seleciona o PDF", type=["pdf"], key="pdf_up", label_visibility="collapsed")
         if up:
@@ -271,7 +271,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── Faturas vencidas ──
-    st.html(_sec("🔴 Faturas vencidas", f"{len(venc)} fatura(s) com prazo ultrapassado"))
+    st.html(_sec("🔴 Faturas vencidas", f"{len(venc)} Fatura(s) com prazo ultrapassado"))
     PAGE = 10; pv = st.session_state.get("pag_v", 0)
     pagv = venc[pv*PAGE:(pv+1)*PAGE]
     if not venc:
@@ -291,7 +291,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── A vencer ──
-    st.html(_sec("🟡 A vencer — próximos 30 dias", f"{len(av)} fatura(s) a vencer em breve"))
+    st.html(_sec("🟡 A vencer — próximos 30 dias", f"{len(av)} Fatura(s) a vencer em breve"))
     pa = st.session_state.get("pag_a", 0)
     paga = av[pa*PAGE:(pa+1)*PAGE]
     if not av:
