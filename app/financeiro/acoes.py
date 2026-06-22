@@ -13,6 +13,11 @@ try:
 except Exception:
     SUPABASE_OK = False
 
+def _ed(v) -> str:
+    """Valor com € à direita, 2 decimais."""
+    try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+    except: return "— €"
+
 # ---------------------------------------------------------------------------
 # FÓRMULAS FINANCEIRAS
 # ---------------------------------------------------------------------------
@@ -151,7 +156,7 @@ def _get_acoes() -> list[dict]:
 def _val_cell(v: float | None, placeholder: str = "—") -> str:
     if v is None or v == 0:
         return f'<span style="color:#8B94A3">{placeholder}</span>'
-    return f'<span style="font-weight:600">{eur2(v)}</span>'
+    return f'<span style="font-weight:600">{_ed(v)}</span>'
 
 def _margem(compete, consultor, formador) -> tuple[float, str]:
     """Margem bruta M&T = COMPETE - consultor - formador."""
@@ -207,11 +212,11 @@ def render_acoes(user: dict):
 
     st.html(
         '<div class="fin-kpi-row">'
-        + kpi_h("💶 COMPETE recebido",   eur(total_compete),   f"{len(acoes)} ações", "g")
-        + kpi_h("🤝 Total consultores",  eur(total_consultor), "NH emitidas",         "b")
-        + kpi_h("👤 Total formadores",   eur(total_formador),  "faturas",             "b")
-        + kpi_h("🏢 Faturado empresas",  eur(total_fat_emp),   "30% M&T",             "a")
-        + kpi_h("📊 Margem bruta M&T",   eur(margem_total),
+        + kpi_h("💶 COMPETE recebido",   _ed(total_compete),   f"{len(acoes)} ações", "g")
+        + kpi_h("🤝 Total consultores",  _ed(total_consultor), "NH emitidas",         "b")
+        + kpi_h("👤 Total formadores",   _ed(total_formador),  "faturas",             "b")
+        + kpi_h("🏢 Faturado empresas",  _ed(total_fat_emp),   "30% M&T",             "a")
+        + kpi_h("📊 Margem bruta M&T",   _ed(margem_total),
                 "COMPETE − consultores − formadores",
                 "g" if margem_total >= 0 else "r")
         + '</div>'
@@ -283,10 +288,10 @@ def render_acoes(user: dict):
                 f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
                 f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Consultor</div>'
                 f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">{consultor}</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#2563EB">{eur2(v_cons)}</div>'
+                f'<div style="font-weight:700;font-size:14px;color:#2563EB">{_ed(v_cons)}</div>'
             )
             form_real = a.get("valor_fatura_formador")
-            form_label = eur2(form_real) + " €" if form_real else f"Contrato: {eur2(val_form_contrato)} €"
+            form_label = _ed(form_real) if form_real else f"Contrato: {_ed(val_form_contrato)}"
             form_cor   = "#2563EB" if form_real else "#8B94A3"
             c2.html(
                 f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
@@ -326,5 +331,5 @@ def render_acoes(user: dict):
                 f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">'
                 f'COMPETE − cons. − form.</div>'
                 f'<div style="font-weight:700;font-size:15px;color:{m_cor}">'
-                f'{eur2(margem) if v_comp else "—"}</div>'
+                f'<span style="color:{m_cor}">{_ed(margem) if v_comp else "—"}</span></div>'
             )
