@@ -50,8 +50,9 @@ def render_dashboard(user):
     notifs = st.session_state.get("notificacoes", [])
     novas = [n for n in notifs if not n.get("lida")]
     if novas:
-        with st.expander(f"🔔 {len(novas)} notificação(ões) não lida(s)", expanded=True):
-            for n in novas[:5]:  # máx 5 no dashboard
+        n_txt = f"🔔 1 notificação não lida" if len(novas)==1 else f"🔔 {len(novas)} notificações não lidas"
+        with st.expander(n_txt, expanded=True):
+            for n in novas[:5]:
                 tipo_ico = "📄" if n.get("tipo") == "fatura_formador" else "🤝"
                 st.html(
                     f'<div style="display:flex;align-items:flex-start;gap:10px;'
@@ -84,7 +85,7 @@ def render_dashboard(user):
         n_pre=len(st.session_state.mock_pre); tp=sum(f["valor"] for f in st.session_state.mock_pre)
         n_venc=len(st.session_state.mock_venc); tv=sum(f["valor"] for f in st.session_state.mock_venc)
         n_apr=len(st.session_state.mock_av); ta=sum(f["valor"] for f in st.session_state.mock_av)
-        n_pago,tpago=23,121400
+        n_pago,tpago=23,23150
         recentes=_MOCK_AV[:5]
         despesa=[{"projeto":k,"valor":v} for k,v in {"MENTORES":52400,"ANIET":38900,"APCMC":27600,"APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}.items()]
 
@@ -99,14 +100,18 @@ def render_dashboard(user):
         )
 
     if n_pre>0:
-        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>Alertas/A Pagar</strong>.</div>')
+        st.html(f'<div class="fin-warn">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>🧾 Faturas</strong>.</div>')
+
+    def _e(v):
+        try: return f"{float(v):,.0f} €".replace(",",".")
+        except: return "— €"
 
     st.html(
         '<div class="fin-kpi-row">'
-        +kpi_h("🔍 Pré-aprovação",   eur(tp),    f"{n_pre} faturas","a")
-        +kpi_h("✅ Aprovado a pagar",eur(ta),    f"{n_apr} faturas","g")
-        +kpi_h("💳 Pago este mês",   eur(tpago), f"{n_pago} faturas","b")
-        +kpi_h("🚨 Vencido",         eur(tv),    f"{n_venc} faturas","r")
+        +kpi_h("🔍 Pré-aprovação",   _e(tp),    f"{n_pre} faturas","a")
+        +kpi_h("✅ Aprovado a pagar",_e(ta),    f"{n_apr} faturas","g")
+        +kpi_h("💳 Pago este mês",   _e(tpago), f"{n_pago} faturas","b")
+        +kpi_h("🚨 Vencido",         _e(tv),    f"{n_venc} faturas","r")
         +'</div>'
     )
 
