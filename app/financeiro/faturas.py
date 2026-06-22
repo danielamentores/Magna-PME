@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import date
 from app.financeiro.helpers import (
+    mostrar_erro, mostrar_sucesso, mostrar_aviso, mostrar_info,
     eur, ptag, bdg, CORES, ordenar, fil_proj, fil_datas,
     excel_bytes, extrair_pdf, guardar_comprovativo,
     notificar_rejeicao, reg_hist,
@@ -124,18 +125,22 @@ def _card(row, tipo, idx, user_nome):
             with col_ok:
                 if st.button("✅ Confirmar", key=f"conf_{tipo}_{idx}_{fid}",
                              use_container_width=True, type="primary", disabled=comp is None):
-                    guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
-                    if SUPABASE_OK:
-                        if marcar_paga(fid, user_nome):
+                    try:
+                        guardar_comprovativo(fid, comp.getvalue(), comp.name, user_nome)
+                        if SUPABASE_OK:
+                            if marcar_paga(fid, user_nome):
+                                reg_hist("Marcado pago", n, f, p, v)
+                                st.session_state.pop(show_key, None)
+                                mostrar_sucesso(f"{n} marcada como paga.", "Comprovativo guardado.")
+                                st.rerun()
+                        else:
+                            lst_key = "mock_venc" if tipo == "vencida" else "mock_av"
+                            st.session_state[lst_key] = [x for x in st.session_state[lst_key] if x.get("id") != fid]
                             reg_hist("Marcado pago", n, f, p, v)
                             st.session_state.pop(show_key, None)
-                            st.toast(f"{n} paga. Comprovativo guardado."); st.rerun()
-                    else:
-                        lst_key = "mock_venc" if tipo == "vencida" else "mock_av"
-                        st.session_state[lst_key] = [x for x in st.session_state[lst_key] if x.get("id") != fid]
-                        reg_hist("Marcado pago", n, f, p, v)
-                        st.session_state.pop(show_key, None)
-                        st.toast(f"{n} paga."); st.rerun()
+                            st.toast(f"{n} paga."); st.rerun()
+                    except Exception as _err:
+                        mostrar_erro(_err, "registar pagamento")
             with col_x:
                 if st.button("✖", key=f"canc_{tipo}_{idx}_{fid}", use_container_width=True):
                     st.session_state.pop(show_key, None); st.rerun()
@@ -204,7 +209,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── Aprovação manual ──
-    st.html(_sec(f"🔍 Aprovação Manual — {len(pre)} pendente(s)", "Faturas cuja validação automática falhou. Analisa e aprova ou rejeita."))
+    st.html(_sec(f"🔍 Aprovação manual — {len(pre)} pendente(s)", "Faturas cuja validação automática falhou. Analisa e aprova ou rejeita."))
     if not pre:
         st.html(_empty("✅ Nenhuma fatura pendente de aprovação manual."))
     else:
@@ -233,26 +238,37 @@ def render_alertas(user):
             with col_a:
                 st.markdown("<div style='margin-top:4px'>", unsafe_allow_html=True)
                 if st.button("✅ Aprovar", key=f"ap_{i}_{fid}", use_container_width=True, type="primary"):
-                    if SUPABASE_OK:
-                        if aprovar_fatura(fid, user_nome):
+                    try:
+                        if SUPABASE_OK:
+                            if aprovar_fatura(fid, user_nome):
+                                reg_hist("Aprovado",n,f,p,v)
+                                mostrar_sucesso(f"{n} aprovada com sucesso.")
+                                st.rerun()
+                        else:
+                            st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id")!=fid]
                             reg_hist("Aprovado",n,f,p,v); st.toast(f"{n} aprovada."); st.rerun()
-                    else:
-                        st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                        reg_hist("Aprovado",n,f,p,v); st.toast(f"{n} aprovada."); st.rerun()
+                    except Exception as _err:
+                        mostrar_erro(_err, "aprovar fatura")
                 mot = st.text_input("", key=f"mt_{i}_{fid}", placeholder="Motivo de rejeição…", label_visibility="collapsed")
                 if st.button("❌ Rejeitar", key=f"rj_{i}_{fid}", use_container_width=True):
                     if mot:
-                        if SUPABASE_OK:
-                            if rejeitar_fatura(fid, mot, user_nome):
+                        try:
+                            if SUPABASE_OK:
+                                if rejeitar_fatura(fid, mot, user_nome):
+                                    reg_hist("Rejeitado",n,f,p,v,mot)
+                                    notificar_rejeicao(em,n,mot)
+                                    mostrar_aviso(f"{n} rejeitada.", f"Motivo: {mot}")
+                                    st.rerun()
+                            else:
+                                st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id")!=fid]
                                 reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
-                        else:
-                            st.session_state.mock_pre = [x for x in st.session_state.mock_pre if x.get("id")!=fid]
-                            reg_hist("Rejeitado",n,f,p,v,mot); notificar_rejeicao(em,n,mot); st.toast(f"{n} rejeitada."); st.rerun()
+                        except Exception as _err:
+                            mostrar_erro(_err, "rejeitar fatura")
                     else:
-                        st.warning("Escreve um motivo de rejeição.")
+                        mostrar_aviso("Escreve um motivo de rejeição antes de rejeitar.")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-    with st.expander("🔎 Leitura Manual de Fatura PDF", expanded=False):
+    with st.expander("🔎 Leitura manual de fatura PDF", expanded=False):
         st.html('<div style="font-size:13px;color:#6B7280;margin-bottom:12px">Carrega um PDF para extrair automaticamente os dados da fatura.</div>')
         up = st.file_uploader("Seleciona o PDF", type=["pdf"], key="pdf_up", label_visibility="collapsed")
         if up:
@@ -271,7 +287,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── Faturas vencidas ──
-    st.html(_sec("🔴 Faturas vencidas", f"{len(venc)} Fatura(s) com prazo ultrapassado"))
+    st.html(_sec("🔴 Faturas vencidas", f"{len(venc)} fatura(s) com prazo ultrapassado"))
     PAGE = 10; pv = st.session_state.get("pag_v", 0)
     pagv = venc[pv*PAGE:(pv+1)*PAGE]
     if not venc:
@@ -291,7 +307,7 @@ def render_alertas(user):
     st.html(_div())
 
     # ── A vencer ──
-    st.html(_sec("🟡 A vencer — próximos 30 dias", f"{len(av)} Fatura(s) a vencer em breve"))
+    st.html(_sec("🟡 A vencer — próximos 30 dias", f"{len(av)} fatura(s) a vencer em breve"))
     pa = st.session_state.get("pag_a", 0)
     paga = av[pa*PAGE:(pa+1)*PAGE]
     if not av:
