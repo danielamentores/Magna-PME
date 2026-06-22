@@ -95,8 +95,8 @@ def render_dashboard(user):
         n_venc,tv    = p["n_venc"],p["tv"]
         recentes = _MOCK_AV[:5]
         despesa  = [{"projeto":k,"valor":v} for k,v in {
-            "MENTORES":52400,"ANIET":38900,"APIMA":27600,
-            "PRODUTECH":9200,"APCMC":61200,"CALÇADO":4600}.items()]
+            "MENTORES":50400,"ANIET":48900,"APIMA":27600,
+            "PRODUTECH":9200,"APCMC":67200,"CALÇADO":4600}.items()]
 
     if n_pre > 0:
         st.html(f'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:3px solid #D97706;border-radius:8px;padding:9px 14px;font-size:13px;color:#92400E;margin:8px 0 4px">⚠️ <strong>{n_pre} Fatura(s) Aguardam Aprovação Manual</strong> — Ver em <strong>🧾 Faturas</strong></div>')
