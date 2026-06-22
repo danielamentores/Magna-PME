@@ -34,9 +34,38 @@ def calc_consultor(formandos_cert: int, vol_cert: float) -> float:
     return round(vol_cert * taxa, 2)
 
 def calc_compete(projeto: str, vol_cert: float) -> float:
-    """Valor que a MENTORES recebe do COMPETE.
-    MENTORES: vol_cert × 7,12
-    Outros:   0,5 × vol_cert × 7,12 + 0,5 × vol_cert × 5,00
+    """Valor que a M&T recebe do COMPETE (70% da comparticipação).
+    MENTORES:  vol × 7,12 × 0,7
+    Outros:    0,5 × vol × 7,12 × 0,7 + 0,5 × vol × 5,00 × 0,7
+    """
+    if not vol_cert:
+        return 0.0
+    if projeto == "MENTORES":
+        return round(vol_cert * 7.12 * 0.7, 2)
+    else:
+        return round(0.5 * vol_cert * 7.12 * 0.7 + 0.5 * vol_cert * 5.0 * 0.7, 2)
+
+def calc_faturado_empresa(projeto: str, vol_cert: float) -> float:
+    """Valor que a M&T fatura à empresa (30% da comparticipação).
+    MENTORES:  vol × 7,12 × 0,3
+    Outros:    0,5 × vol × 7,12 × 0,3 + 0,5 × vol × 5,00 × 0,3
+    """
+    if not vol_cert:
+        return 0.0
+    if projeto == "MENTORES":
+        return round(vol_cert * 7.12 * 0.3, 2)
+    else:
+        return round(0.5 * vol_cert * 7.12 * 0.3 + 0.5 * vol_cert * 5.0 * 0.3, 2)
+
+def calc_empresa_recebe(projeto: str, vol_cert: float) -> float:
+    """Valor que a empresa recebe diretamente do COMPETE2030 (informativo).
+    = comparticipação total − o que M&T recebe − o que M&T fatura
+    Simplificado: igual ao faturado_empresa (os 30% que a empresa paga à M&T
+    são financiados pelo COMPETE, portanto a empresa recebe 100% da comparticipação
+    mas paga 30% à M&T).
+    Para apresentação: vol × taxa_total (sem desconto).
+    MENTORES: vol × 7,12
+    Outros:   0,5 × vol × 7,12 + 0,5 × vol × 5,00
     """
     if not vol_cert:
         return 0.0
@@ -44,28 +73,6 @@ def calc_compete(projeto: str, vol_cert: float) -> float:
         return round(vol_cert * 7.12, 2)
     else:
         return round(0.5 * vol_cert * 7.12 + 0.5 * vol_cert * 5.0, 2)
-
-def calc_empresa_recebe(dimensao: str, vol_cert: float,
-                        form_desf: int = 0, form_nao_desf: int = 0) -> float:
-    """Valor que a empresa recebe do COMPETE (70%)."""
-    if not dimensao or not vol_cert:
-        return 0.0
-    if dimensao in ("Pequena", "Micro"):
-        return round(0.7 * 7.50 * vol_cert, 2)
-    elif dimensao == "Média":
-        return round((0.7 * 7.50 * form_desf) + (0.6 * 7.50 * form_nao_desf), 2)
-    return 0.0
-
-def calc_faturado_empresa(dimensao: str, vol_cert: float,
-                          form_desf: int = 0, form_nao_desf: int = 0) -> float:
-    """Valor faturado à empresa pelos 30%."""
-    if not dimensao or not vol_cert:
-        return 0.0
-    if dimensao in ("Pequena", "Micro"):
-        return round(0.3 * 7.50 * vol_cert, 2)
-    elif dimensao == "Média":
-        return round((0.3 * 7.50 * form_desf) + (0.4 * 7.50 * form_nao_desf), 2)
-    return 0.0
 
 # ---------------------------------------------------------------------------
 # MOCK DATA
@@ -206,20 +213,22 @@ def render_acoes(user: dict):
     total_compete   = sum(calc_compete(a.get("projeto",""), _vol(a)) for a in acoes)
     total_consultor = sum(calc_consultor(a.get("formandos_certificados",0), _vol(a)) for a in acoes)
     total_formador  = sum(a.get("valor_fatura_formador") or calc_formador(a.get("formandos_certificados",0), a.get("volume_horas",25)) for a in acoes)
-    total_fat_emp   = sum(calc_faturado_empresa(
-        a.get("dimensao",""), _vol(a),
-        a.get("formandos_desf",0), a.get("formandos_nao_desf",0)) for a in acoes)
+    total_fat_emp   = sum(calc_faturado_empresa(a.get("projeto",""), _vol(a)) for a in acoes)
+    total_margem    = sum((calc_compete(a.get("projeto",""), _vol(a)) + calc_faturado_empresa(a.get("projeto",""), _vol(a)))
+                         - (calc_consultor(a.get("formandos_certificados",0), _vol(a))
+                            + (a.get("valor_fatura_formador") or calc_formador(a.get("formandos_certificados",0), a.get("volume_horas",25))))
+                         for a in acoes)
     margem_total   = total_compete - total_consultor - total_formador
 
     st.html(
         '<div class="fin-kpi-row">'
-        + kpi_h("💶 COMPETE recebido",   _ed(total_compete),   f"{len(acoes)} ações", "g")
-        + kpi_h("🤝 Total consultores",  _ed(total_consultor), "NH emitidas",         "b")
-        + kpi_h("👤 Total formadores",   _ed(total_formador),  "faturas",             "b")
-        + kpi_h("🏢 Faturado empresas",  _ed(total_fat_emp),   "30% M&T",             "a")
-        + kpi_h("📊 Margem bruta M&T",   _ed(margem_total),
-                "COMPETE − consultores − formadores",
-                "g" if margem_total >= 0 else "r")
+        + kpi_h("💶 M&T recebe",        _ed(total_compete),   f"{len(acoes)} ações", "g")
+        + kpi_h("🏢 M&T fatura empresa",_ed(total_fat_emp),   "a cobrar",            "a")
+        + kpi_h("🤝 Consultores",       _ed(total_consultor), "NH total",            "b")
+        + kpi_h("👤 Formadores",        _ed(total_formador),  "faturas",             "b")
+        + kpi_h("📊 Margem bruta M&T",  _ed(total_margem),
+                "COMPETE+Empresa − (cons.+form.)",
+                "g" if total_margem >= 0 else "r")
         + '</div>'
     )
 
@@ -251,86 +260,34 @@ def render_acoes(user: dict):
 
         v_cons   = calc_consultor(fc, vol)
         v_comp   = calc_compete(proj, vol)
-        v_emp_r  = calc_empresa_recebe(dim, vol, fd, fnd)
-        v_fat_e  = calc_faturado_empresa(dim, vol, fd, fnd)
-        margem, m_cor = _margem(v_comp, v_cons, val_form)
+        v_fat_e  = calc_faturado_empresa(proj, vol)
+        v_emp_r  = calc_empresa_recebe(proj, vol)
+        receita_total = v_comp + v_fat_e
+        custo_total   = v_cons + (val_form or val_form_contrato)
+        margem        = round(receita_total - custo_total, 2)
+        m_cor         = "#16A34A" if margem >= 0 else "#DC2626"
 
-        with st.container(border=True):
-            # Cabeçalho
-            col_head, col_est = st.columns([5, 2])
-            with col_head:
-                st.html(
-                    f'<div style="margin-bottom:8px">'
-                    f'<span style="font-weight:700;font-size:14px">{codigo}</span>'
-                    f'&nbsp;&nbsp;{ptag(proj)}'
-                    f'<div style="font-size:12px;color:#8B94A3;margin-top:2px">'
-                    f'{nome[:60]} · {empresa}'
-                    f'</div>'
-                    f'</div>'
-                )
-            with col_est:
-                vol_display = f"{ch}h × {fc} = {vol}" if ch and fc else "—"
-                st.html(
-                    f'<div style="text-align:right;padding-top:4px">{bdg(est)}'
-                    f'<div style="font-size:11px;color:#8B94A3;margin-top:3px">'
-                    f'{fc} formandos cert.</div>'
-                    f'<div style="font-size:11px;color:#2A7A8C;margin-top:1px">'
-                    f'Vol. cert.: {vol_display}</div>'
-                    f'<div style="font-size:11px;color:#8B94A3;margin-top:1px">{dim or "—"}'
-                    f'</div></div>'
-                )
+        vol_display = f"{ch}h × {fc} = {vol}" if ch and fc else "—"
+        form_real  = a.get("valor_fatura_formador")
+        form_label = _ed(form_real) if form_real else f"Contrato: {_ed(val_form_contrato)}"
+        form_cor   = "#2563EB" if form_real else "#8B94A3"
+        mg_bg      = "#F0FDF4" if margem >= 0 else "#FEF2F2"
 
-            st.html('<div style="height:1px;background:#F0F2F5;margin:8px 0"></div>')
-
-            # Tabela financeira
-            c1, c2, c3, c4, c5, c6 = st.columns(6)
-
-            c1.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Consultor</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">{consultor}</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#2563EB">{_ed(v_cons)}</div>'
-            )
-            form_real = a.get("valor_fatura_formador")
-            form_label = _ed(form_real) if form_real else f"Contrato: {_ed(val_form_contrato)}"
-            form_cor   = "#2563EB" if form_real else "#8B94A3"
-            c2.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Formador</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">{formador}</div>'
-                f'<div style="font-weight:700;font-size:14px;color:{form_cor}">'
-                f'{form_label}</div>'
-            )
-            c3.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'
-                f'COMPETE recebido</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">M&T recebe</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#16A34A">'
-                f'{_val_cell(v_comp)}</div>'
-            )
-            c4.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'
-                f'Faturado empresa</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">30% M&T</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#D97706">'
-                f'{_val_cell(v_fat_e)}</div>'
-            )
-            c5.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'
-                f'Empresa recebe</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">70% COMPETE</div>'
-                f'<div style="font-weight:700;font-size:14px;color:#8B94A3">'
-                f'{_val_cell(v_emp_r)}</div>'
-            )
-            c6.html(
-                f'<div style="font-size:11px;color:#8B94A3;font-weight:600;'
-                f'text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'
-                f'Margem M&T</div>'
-                f'<div style="font-size:12px;color:#4B5263;margin-bottom:4px">'
-                f'COMPETE − cons. − form.</div>'
-                f'<div style="font-weight:700;font-size:15px;color:{m_cor}">'
-                f'<span style="color:{m_cor}">{_ed(margem) if v_comp else "—"}</span></div>'
-            )
+        st.html(
+            '<div style="background:#fff;border:1px solid #E4E7EF;border-radius:12px;margin-bottom:12px;overflow:hidden">' +
+            '<div style="padding:14px 18px 12px;border-bottom:1px solid #F0F2F5;display:flex;align-items:flex-start;justify-content:space-between">' +
+            f'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-weight:700;font-size:15px;color:#1A1F2E">{codigo}</span>{ptag(proj)}&nbsp;{bdg(est)}</div><div style="font-size:13px;color:#4B5263">{nome[:65]}</div><div style="font-size:12px;color:#8B94A3;margin-top:2px">{empresa} · {dim or "—"}</div></div>' +
+            f'<div style="text-align:right;flex-shrink:0;margin-left:16px"><div style="font-size:12px;color:#8B94A3">{fc} formandos certificados</div><div style="font-size:12px;color:#2A7A8C;font-weight:600;margin-top:2px">Vol. cert.: {vol_display}</div></div>' +
+            '</div>' +
+            '<div style="padding:10px 18px;background:#F7F8FC;border-bottom:1px solid #F0F2F5;display:flex;gap:32px">' +
+            f'<div><span style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Consultor</span><div style="font-size:13px;color:#1A1F2E;margin-top:1px">{consultor}</div><div style="font-size:15px;font-weight:700;color:#2563EB;margin-top:2px">{_ed(v_cons)}</div></div>' +
+            '<div style="width:1px;background:#E4E7EF;flex-shrink:0"></div>' +
+            f'<div><span style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Formador</span><div style="font-size:13px;color:#1A1F2E;margin-top:1px">{formador}</div><div style="font-size:15px;font-weight:700;color:{form_cor};margin-top:2px">{form_label}</div></div>' +
+            '</div>' +
+            '<div style="padding:12px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">' +
+            f'<div style="background:#F0FDF4;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#16A34A;font-weight:600;text-transform:uppercase;letter-spacing:.05em">M&T recebe</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE2030</div><div style="font-size:17px;font-weight:700;color:#16A34A;margin-top:4px">{_ed(v_comp) if v_comp else "—"}</div></div>' +
+            f'<div style="background:#FFFBEB;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#D97706;font-weight:600;text-transform:uppercase;letter-spacing:.05em">M&T fatura</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">Empresa</div><div style="font-size:17px;font-weight:700;color:#D97706;margin-top:4px">{_ed(v_fat_e) if v_fat_e else "—"}</div></div>' +
+            f'<div style="background:#F7F8FC;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Empresa recebe</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE2030</div><div style="font-size:17px;font-weight:700;color:#6B7280;margin-top:4px">{_ed(v_emp_r) if v_emp_r else "—"}</div></div>' +
+            f'<div style="background:{mg_bg};border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:{m_cor};font-weight:600;text-transform:uppercase;letter-spacing:.05em">Margem M&T</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE+Empresa−(cons.+form.)</div><div style="font-size:17px;font-weight:700;color:{m_cor};margin-top:4px">{_ed(margem) if v_comp else "—"}</div></div>' +
+            '</div></div>'
+        )
