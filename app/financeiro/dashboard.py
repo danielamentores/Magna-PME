@@ -54,14 +54,13 @@ def render_dashboard(user):
     col_f, col_info = st.columns([2, 4])
     with col_f:
         periodo = st.selectbox("Período", list(_MOCK_PERIODOS.keys()), key="dash_periodo")
-    with col_info:
-        st.html('<div style="padding-top:28px;font-size:12px;color:#8B94A3">Dados em Modo de Demonstração</div>')
+
 
     # ── Notificações ──
     notifs = st.session_state.get("notificacoes", [])
     novas  = [n for n in notifs if not n.get("lida")]
     if novas:
-        n_txt = "🔔 1 Notificação Não Lida" if len(novas)==1 else f"🔔 {len(novas)} Notificações Não Lidas"
+        n_txt = "🔔 1 notificação não lida" if len(novas)==1 else f"🔔 {len(novas)} notificações não lidas"
         with st.expander(n_txt, expanded=True):
             for n in novas[:5]:
                 ico = "📄" if n.get("tipo")=="fatura_formador" else "🤝"
@@ -95,11 +94,11 @@ def render_dashboard(user):
         n_venc,tv    = p["n_venc"],p["tv"]
         recentes = _MOCK_AV[:5]
         despesa  = [{"projeto":k,"valor":v} for k,v in {
-            "MENTORES":50400,"ANIET":48900,"APIMA":27600,
-            "PRODUTECH":9200,"APCMC":67200,"CALÇADO":4600}.items()]
+            "MENTORES":52400,"ANIET":38900,"APCMC":27600,
+            "APIMA":19200,"PRODUTECH":61200,"CALÇADO":14600}.items()]
 
     if n_pre > 0:
-        st.html(f'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:3px solid #D97706;border-radius:8px;padding:9px 14px;font-size:13px;color:#92400E;margin:8px 0 4px">⚠️ <strong>{n_pre} Fatura(s) Aguardam Aprovação Manual</strong> — Ver em <strong>🧾 Faturas</strong></div>')
+        st.html(f'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-left:3px solid #D97706;border-radius:8px;padding:9px 14px;font-size:13px;color:#92400E;margin:8px 0 4px">⚠️ <strong>{n_pre} fatura(s) aguardam aprovação manual</strong> — ver em <strong>🧾 Faturas</strong></div>')
 
     # ── KPIs ──
     kpi_pago = {"Este mês":"Pago este mês","Mês anterior":"Pago mês anterior",
@@ -108,7 +107,7 @@ def render_dashboard(user):
     st.html(
         '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px">'
         + _kpi("🔍","Pré-aprovação", _e(tp),    f"{n_pre} faturas",  "a")
-        + _kpi("✅","Aprovado a Pagar",_e(ta),   f"{n_apr} faturas",  "g")
+        + _kpi("✅","Aprovado a pagar",_e(ta),   f"{n_apr} faturas",  "g")
         + _kpi("💳", kpi_pago,        _e(tpago), f"{n_pago} faturas", "b")
         + _kpi("🚨","Vencido",        _e(tv),    f"{n_venc} faturas", "r")
         + '</div>'
@@ -183,11 +182,11 @@ def render_dashboard(user):
     st.html('<p style="font-size:13px;font-weight:700;color:#4B5263;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Exportação de dados</p>')
     c1,c2,c3 = st.columns(3)
     with c1:
-        if st.button("📊 Exportar Faturas", use_container_width=True, key="exp_fat"):
+        if st.button("📊 Exportar faturas", use_container_width=True, key="exp_fat"):
             st.toast("Disponível quando a BD estiver ligada.")
     with c2:
-        if st.button("🤝 Exportar Consultores", use_container_width=True, key="exp_cons"):
+        if st.button("🤝 Exportar consultores", use_container_width=True, key="exp_cons"):
             st.toast("Disponível quando a BD estiver ligada.")
     with c3:
-        if st.button("🏢 Exportar Faturação Empresas", use_container_width=True, key="exp_emp"):
+        if st.button("🏢 Exportar faturação empresas", use_container_width=True, key="exp_emp"):
             st.toast("Disponível quando a BD estiver ligada.")
