@@ -17,6 +17,11 @@ try:
 except Exception:
     SUPABASE_OK = False
 
+def _e(v) -> str:
+    try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+    except: return "— €"
+
+
 
 
 try:
@@ -25,6 +30,11 @@ try:
     SUPABASE_OK = True
 except Exception:
     SUPABASE_OK = False
+
+def _e(v) -> str:
+    try: return f"{float(v):,.2f} €".replace(",","X").replace(".",",").replace("X",".")
+    except: return "— €"
+
     def calcular_valor_acao(ch, f): return ch * f * (3.12 if f >= 13 else 2.50)
 
 # ---------------------------------------------------------------------------
@@ -241,12 +251,12 @@ def render_consultores(user: dict):
                     if forms:
                         fh = " · ".join([f"{f['nome']}&nbsp;{bdg(f['estado'])}" for f in forms])
                         cf_.markdown(f"<div style='font-size:11px;color:#6B7280;padding-top:5px'>{fh}</div>", unsafe_allow_html=True)
-                    cv.markdown(f"<div style='text-align:right;padding-top:5px;font-weight:700;font-size:14px'>{eur(v)}</div>", unsafe_allow_html=True)
+                    cv.markdown(f"<div style='text-align:right;padding-top:5px;font-weight:700;font-size:14px'>{_e(v)}</div>", unsafe_allow_html=True)
 
                 sel_acoes = [a for a in acoes if st.session_state.get(f"sel_{a['id']}", False)]
                 if sel_acoes:
                     total = sum(calcular_valor_acao(int(a.get("volume_horas") or 0), int(a.get("formandos_certificados") or 0)) for a in sel_acoes)
-                    st.markdown(f"<div style='font-size:13px;color:#4B5263;margin:6px 0'><strong>{len(sel_acoes)} selecionada(s)</strong> · Total: <strong>{eur(total)}</strong></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size:13px;color:#4B5263;margin:6px 0'><strong>{len(sel_acoes)} selecionada(s)</strong> · Total: <strong>{_e(total)}</strong></div>", unsafe_allow_html=True)
                     if st.button(f"📄 Gerar NH — {c_nome}", key=f"gnh_{gid}", type="primary"):
                         try:
                             c_data = cm[0] if cm else {"nome":c_nome,"nif":"—","iban":"—"}
@@ -292,7 +302,7 @@ def render_consultores(user: dict):
                     f'<div style="font-size:12px;color:#8B94A3">{ptag(pr)} · Emitida: {de}{paga_txt}</div>'
                     f'</div>'
                     f'<div style="text-align:right;margin-right:10px">'
-                    f'<div style="font-weight:700;font-size:15px">{eur(v)}</div>'
+                    f'<div style="font-weight:700;font-size:15px">{_e(v)}</div>'
                     f'</div>'
                     f'{bdg("nh_paga" if paga else "nh_pendente")}'
                     f'</div>'
@@ -330,7 +340,7 @@ def render_consultores(user: dict):
                 st.html(
                     f'<div class="fin-aprov">'
                     f'<div style="font-weight:700;font-size:14px">{cn} <span style="font-size:12px;font-weight:400;color:#8B94A3">{nf}</span></div>'
-                    f'<div style="font-size:13px;color:#4B5263">{ptag(pr)} · {eur(v)}</div>'
+                    f'<div style="font-size:13px;color:#4B5263">{ptag(pr)} · {_e(v)}</div>'
                     f'<div class="ds">Submetida: {ds}</div>'
                     f'</div>'
                 )
@@ -394,7 +404,7 @@ def render_consultores(user: dict):
                     f'<div style="display:flex;align-items:center;gap:8px;'
                     f'padding:10px 0 6px;border-bottom:1px solid #E4E7EF;margin-bottom:6px">'
                     f'<span style="font-weight:700;font-size:14px;flex:1">{nome_form}</span>'
-                    f'<span style="font-size:13px;font-weight:600;color:#4B5263">{eur(total_form)}</span>'
+                    f'<span style="font-size:13px;font-weight:600;color:#4B5263">{_e(total_form)}</span>'
                     f'</div>', unsafe_allow_html=True
                 )
                 # Linhas por ação
@@ -408,7 +418,7 @@ def render_consultores(user: dict):
                         f'</div>'
                         f'{ptag(r["projeto"])}'
                         f'&nbsp;&nbsp;<span style="font-size:12px;color:#8B94A3">{nf_txt}</span>'
-                        f'&nbsp;&nbsp;<span style="font-weight:600;font-size:13px">{eur(r["valor"])}</span>'
+                        f'&nbsp;&nbsp;<span style="font-weight:600;font-size:13px">{_e(r["valor"])}</span>'
                         f'&nbsp;&nbsp;{bdg(r["estado"])}'
                         f'</div>'
                     )
@@ -487,7 +497,7 @@ def render_consultores_financeiro(user):
                     f'<div style="font-weight:700;font-size:14px">{cn}'
                     f'&nbsp;<span style="font-size:12px;font-weight:400;color:#8B94A3">{nf}</span>'
                     f'{pdf_link}</div>'
-                    f'<div style="font-size:13px;color:#4B5263">{ptag(pr)} · {eur(v)}</div>'
+                    f'<div style="font-size:13px;color:#4B5263">{ptag(pr)} · {_e(v)}</div>'
                     f'<div style="font-size:11px;color:#8B94A3;margin-top:2px">Submetida: {ds}</div>'
                     f'{nh_txt}'
                     f'</div>'
@@ -569,7 +579,7 @@ def render_consultores_financeiro(user):
                     f'<div style="display:flex;align-items:center;gap:8px;padding:8px 0 6px;'
                     f'border-bottom:1px solid #E4E7EF;margin-bottom:6px">'
                     f'<span style="font-weight:700;font-size:14px;flex:1">{nome_form}</span>'
-                    f'<span style="font-size:13px;font-weight:600;color:#4B5263">{eur(total_form)}</span>'
+                    f'<span style="font-size:13px;font-weight:600;color:#4B5263">{_e(total_form)}</span>'
                     f'</div>', unsafe_allow_html=True
                 )
                 rows_html = ""
@@ -584,7 +594,7 @@ def render_consultores_financeiro(user):
                         f'</div>'
                         f'{cons_ptag(r["projeto"])}'
                         f'<span style="font-size:12px;color:#8B94A3;margin-left:6px">{nf_txt}</span>'
-                        f'<span style="font-weight:600;font-size:13px;margin-left:6px">{eur(r["valor"])}</span>'
+                        f'<span style="font-weight:600;font-size:13px;margin-left:6px">{_e(r["valor"])}</span>'
                         f'<span style="margin-left:6px">{cons_bdg(r["estado"])}</span>'
                         f'</div>'
                     )
