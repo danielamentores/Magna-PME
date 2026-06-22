@@ -1,18 +1,15 @@
 """Separador 'Controlo de Execução' do perfil do gestor.
 
-Fase visual: dados de exemplo. Volume de formação = horas × formandos que
-terminaram (ex.: 20h × 10 formandos = 200). Mais tarde trocamos os dados
-mock pelas datas de fim e volumes reais (db_gestor / Supabase).
+Volume de formação = horas × formandos que terminaram.
+Dados de exemplo — substituir pelos reais (db_gestor / Supabase).
 """
 import streamlit as st
 
-# Limiar abaixo do qual se assinala "volume aquém do atribuído"
-LIMIAR_ALERTA = 50  # %
+LIMIAR_ALERTA = 50  # % abaixo do qual se assinala "volume aquém do atribuído"
 
 # ---------------------------------------------------------------------------
-# DADOS DE EXEMPLO (substituir pelos reais)
+# PROJETOS (dados de exemplo)
 # ---------------------------------------------------------------------------
-# Cada ação: horas + formandos (que terminaram) → volume = horas * formandos
 PROJETOS_CLUSTERS = {
     "Produtech": {
         "dias_restantes": 120,
@@ -69,6 +66,62 @@ PROJETOS_CLUSTERS = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# AÇÕES VINDAS DO FORMADOR (integradas no controlo de execução)
+# ---------------------------------------------------------------------------
+_ACOES_FORMADOR = [
+    {"id": "a1", "magna_id": "COMPETE2030-FSE+-01195000", "codigo": "LIKE GARDEN.2.PCE",
+     "nome": "Escalada e desmanche de árvores com motosserra", "empresa_cliente": "Like Garden",
+     "data_inicio": "2026-02-19", "data_fim": "2026-03-13", "volume_horas": 50,
+     "formandos_certificados": 18, "estado": "fechada", "projeto": "MENTORES", "tem_fatura": True},
+    {"id": "a2", "magna_id": "COMPETE2030-FSE+-01196000", "codigo": "CAMOESAS.03.PCE",
+     "nome": "Segurança nos trabalhos de construção civil",
+     "empresa_cliente": "CAMOESAS, LDA", "data_inicio": "2025-11-30", "data_fim": "2025-12-12",
+     "volume_horas": 24, "formandos_certificados": 16, "estado": "fechada", "projeto": "ANIET", "tem_fatura": False},
+    {"id": "a3", "magna_id": "COMPETE2030-FSE+-01195000", "codigo": "FENABEL.GEPSLT_16",
+     "nome": "Gestão de emergências e primeiros socorros no local de trabalho",
+     "empresa_cliente": "Fenabel, S.A", "data_inicio": "2026-05-14", "data_fim": "2026-06-04",
+     "volume_horas": 16, "formandos_certificados": 0, "estado": "a_decorrer", "projeto": "MENTORES", "tem_fatura": False},
+    {"id": "a4", "magna_id": "COMPETE2030-FSE+-01196000", "codigo": "FORESTCORTE.2.PCE",
+     "nome": "Utilização da motosserra nas operações florestais",
+     "empresa_cliente": "Forestcorte", "data_inicio": "2026-04-10", "data_fim": "2026-05-31",
+     "volume_horas": 25, "formandos_certificados": 8, "estado": "terminada_sem_fecho", "projeto": "ANIET", "tem_fatura": False},
+]
+
+# Consultor temporário onde ficam as ações ainda sem consultor atribuído
+_CONSULTOR_POR_ATRIBUIR = "Ações Magna (a atribuir)"
+
+
+def _integrar_acoes_formador():
+    """Junta as ações do formador aos projetos, por nome de projeto.
+    Como ainda não têm consultor, vão para um bloco 'a atribuir'.
+    Corre uma vez (no carregamento do módulo)."""
+    for ac in _ACOES_FORMADOR:
+        proj_nome = (ac.get("projeto") or "—").strip()
+        # encontra a chave do cluster (case-insensitive); se não existir, cria
+        chave = next((k for k in PROJETOS_CLUSTERS if k.upper() == proj_nome.upper()), None)
+        if chave is None:
+            chave = proj_nome
+            PROJETOS_CLUSTERS[chave] = {"dias_restantes": 0, "consultores": []}
+
+        consultores = PROJETOS_CLUSTERS[chave]["consultores"]
+        cons = next((c for c in consultores if c["nome"] == _CONSULTOR_POR_ATRIBUIR), None)
+        if cons is None:
+            cons = {"nome": _CONSULTOR_POR_ATRIBUIR, "volume_atribuido": 0, "acoes": []}
+            consultores.append(cons)
+
+        cons["acoes"].append({
+            "nome": ac.get("nome", "—"),
+            "horas": ac.get("volume_horas", 0),
+            "formandos": ac.get("formandos_certificados", 0),
+            "codigo": ac.get("codigo"),
+            "empresa": ac.get("empresa_cliente"),
+            "estado": ac.get("estado"),
+        })
+
+
+_integrar_acoes_formador()
+
 
 # ---------------------------------------------------------------------------
 # CÁLCULOS
@@ -93,7 +146,6 @@ def _totais_projeto(proj):
 # ---------------------------------------------------------------------------
 def render():
     st.subheader("📊 Controlo de Execução")
-
     area = st.radio(
         "Área",
         ["Clusters", "Formação Ação", "Comércio e Serviços"],
@@ -101,7 +153,6 @@ def render():
         label_visibility="collapsed",
         key="ce_area",
     )
-
     if area == "Clusters":
         _render_clusters()
     else:
@@ -134,7 +185,6 @@ def _render_clusters():
 
 def _render_detalhe(nome):
     proj = PROJETOS_CLUSTERS[nome]
-
     if st.button("← Voltar aos projetos", key="ce_voltar"):
         st.session_state.pop("ce_proj_sel", None)
         st.rerun()
@@ -148,21 +198,25 @@ def _render_detalhe(nome):
 
     st.divider()
     st.markdown("#### Consultores")
-
     for c in proj["consultores"]:
         vc = _vol_consultor(c)
         va = c.get("volume_atribuido", 0)
-        pc = (vc / va * 100) if va else 0
         with st.container(border=True):
             st.markdown(f"**{c['nome']}**")
-            st.caption(f"Volume: {vc} / {va}  ·  {pc:.0f}% do atribuído")
-            st.progress(min(pc / 100, 1.0))
-            if pc < LIMIAR_ALERTA:
-                st.warning("⚠️ Volume bastante abaixo do atribuído — considerar redistribuir.")
+            if va > 0:
+                pc = vc / va * 100
+                st.caption(f"Volume: {vc} / {va}  ·  {pc:.0f}% do atribuído")
+                st.progress(min(pc / 100, 1.0))
+                if pc < LIMIAR_ALERTA:
+                    st.warning("⚠️ Volume bastante abaixo do atribuído — considerar redistribuir.")
+            else:
+                st.caption(f"Volume: {vc}  ·  sem volume atribuído definido")
 
             st.caption("Ações de formação:")
             for a in c.get("acoes", []):
+                extra = f" [{a['codigo']}]" if a.get("codigo") else ""
+                empresa = f" · {a['empresa']}" if a.get("empresa") else ""
                 st.caption(
-                    f"• {a['nome']} — {a['horas']}h × {a['formandos']} formandos "
+                    f"• {a['nome']}{extra}{empresa} — {a['horas']}h × {a['formandos']} formandos "
                     f"= {_vol_acao(a)} de volume"
                 )
