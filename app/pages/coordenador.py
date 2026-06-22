@@ -37,3 +37,18 @@ def render(user: dict):
         from app.pages.formacao import render as r; r()
     with tab3:
         from app.pages.comercio import render as r; r()
+# --- Reembolsos (estado partilhado gestora ↔ coordenadora) ---
+_CHAVE_RC = "reembolso_candidatos"
+_CHAVE_RP = "reembolso_problemas"
+
+
+def reembolso_candidatos() -> dict:
+    return st.session_state.setdefault(_CHAVE_RC, {})
+
+
+def reembolso_problemas() -> dict:
+    return st.session_state.setdefault(_CHAVE_RP, {})
+
+
+def marcar_problema_reembolso(key: str, motivo: str):
+    reembolso_problemas()[key] = motivo
