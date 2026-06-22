@@ -94,20 +94,20 @@ def _card(row, tipo, idx, user_nome):
         borda = "#D97706"; bg_extra = ""
         dias_cor = "#D97706"
 
-    col_c, col_b = st.columns([5, 2])
+    col_c, col_b = st.columns([6, 2])
     with col_c:
         st.html(
-            f'<div style="background:#fff;border:1px solid #E4E7EF;border-left:3px solid {borda};'
-            f'border-radius:10px;padding:12px 16px;{bg_extra}display:flex;align-items:center;gap:10px">'
+            f'<div style="background:#fff;border:1px solid #E4E7EF;border-left:4px solid {borda};'
+            f'border-radius:10px;padding:16px 20px;{bg_extra}display:flex;align-items:center;gap:12px">'
             f'<div style="flex:1">'
-            f'<div style="font-weight:600;font-size:14px;color:#1A1F2E">{n}'
-            f'&nbsp;<span style="font-size:12px;font-weight:400;color:#8B94A3">{f}</span></div>'
-            f'<div style="font-size:12px;margin-top:3px">{ptag(p)}</div>'
-            f'<div style="font-size:11px;color:#8B94A3;margin-top:2px">Emissão {df} · Prazo {dp}</div>'
+            f'<div style="font-weight:700;font-size:16px;color:#1A1F2E;margin-bottom:4px">{n}'
+            f'&nbsp;&nbsp;<span style="font-size:13px;font-weight:400;color:#6B7280">{f}</span></div>'
+            f'<div style="margin-bottom:4px">{ptag(p)}</div>'
+            f'<div style="font-size:13px;color:#8B94A3">Emissão: {df} &nbsp;·&nbsp; Prazo: <strong style="color:#4B5263">{dp}</strong></div>'
             f'</div>'
-            f'<div style="text-align:right;flex-shrink:0">'
-            f'<div style="font-weight:700;font-size:15px;color:#1A1F2E">{_e(v)}</div>'
-            f'<div style="font-size:12px;color:{dias_cor};margin-top:2px">{dias_txt}</div>'
+            f'<div style="text-align:right;flex-shrink:0;padding-left:12px">'
+            f'<div style="font-weight:700;font-size:18px;color:#1A1F2E">{_e(v)}</div>'
+            f'<div style="font-size:13px;color:{dias_cor};margin-top:4px;font-weight:500">{dias_txt}</div>'
             f'</div>'
             f'</div>'
         )
@@ -252,17 +252,21 @@ def render_alertas(user):
                         st.warning("Escreve um motivo de rejeição.")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-    with st.expander("📤 Ler fatura PDF manualmente"):
-        up = st.file_uploader("Seleciona o PDF da fatura", type=["pdf"], key="pdf_up")
+    with st.expander("🔎 Leitura manual de fatura PDF", expanded=False):
+        st.html('<div style="font-size:13px;color:#6B7280;margin-bottom:12px">Carrega um PDF para extrair automaticamente os dados da fatura.</div>')
+        up = st.file_uploader("Seleciona o PDF", type=["pdf"], key="pdf_up", label_visibility="collapsed")
         if up:
-            d = extrair_pdf(up.read())
-            if d.get("erro"): st.error(f"Erro na leitura: {d['erro']}")
+            with st.spinner("A ler o PDF..."):
+                d = extrair_pdf(up.read())
+            if d.get("erro"):
+                st.error(f"Erro na leitura: {d['erro']}")
             else:
-                c1,c2,c3,c4 = st.columns(4)
-                c1.metric("Nº Fatura",  d.get("numero_fatura") or "—")
-                c2.metric("NIF",        d.get("nif_emitente")  or "—")
-                c3.metric("Valor",      _e(d.get("valor") or 0))
-                c4.metric("Data",       d.get("data_fatura")   or "—")
+                st.html('<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">' +
+                    f'<div style="background:#F7F8FC;border-radius:8px;padding:12px 14px"><div style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Nº Fatura</div><div style="font-size:15px;font-weight:700;color:#1A1F2E">{d.get("numero_fatura") or "—"}</div></div>' +
+                    f'<div style="background:#F7F8FC;border-radius:8px;padding:12px 14px"><div style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">NIF Emitente</div><div style="font-size:15px;font-weight:700;color:#1A1F2E">{d.get("nif_emitente") or "—"}</div></div>' +
+                    f'<div style="background:#F7F8FC;border-radius:8px;padding:12px 14px"><div style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Valor</div><div style="font-size:15px;font-weight:700;color:#1A1F2E">{_e(d.get("valor") or 0)}</div></div>' +
+                    f'<div style="background:#F7F8FC;border-radius:8px;padding:12px 14px"><div style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Data</div><div style="font-size:15px;font-weight:700;color:#1A1F2E">{d.get("data_fatura") or "—"}</div></div>' +
+                    '</div>')
 
     st.html(_div())
 
