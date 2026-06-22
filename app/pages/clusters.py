@@ -267,8 +267,8 @@ def _empresas():
 
         st.html(div())
         col_t1, col_t2 = st.columns(2)
-        col_t1.metric("Total COMPETE (empresa recebe)", _eur(t_compete))
-        col_t2.metric("Total a faturar M&T", _eur(t_mentores))
+        col_t1.metric("Total a Receber pelo COMPETE2030 (empresa recebe)", _eur(t_compete))
+        col_t2.metric("Total a Pagar à M&T", _eur(t_mentores))
 
 # ---------------------------------------------------------------------------
 # FATURAÇÃO
