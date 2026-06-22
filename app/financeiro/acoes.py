@@ -72,12 +72,13 @@ def calc_faturado_empresa(dimensao: str, vol_cert: float,
 # ---------------------------------------------------------------------------
 _MOCK_ACOES = [
     # volume_cert = volume_horas * formandos_certificados
+    # valor_fatura_formador = horas * taxa (25€ se >=13 form, 20€ se <13)
     {
         "id": "a1", "codigo": "LIKE GARDEN.2.PCE",
         "nome": "Escalada e desmanche de árvores com motosserra",
         "empresa_cliente": "Like Garden", "projeto": "MENTORES",
         "consultor_nome": "Etapas Pioneiras, Lda",
-        "formador_nome": "Ana Silva", "valor_fatura_formador": None,
+        "formador_nome": "Ana Silva", "valor_fatura_formador": 625.0,  # 25h * 25€
         "dimensao": "Pequena", "volume_horas": 25,
         "formandos_certificados": 18, "formandos_desf": 0, "formandos_nao_desf": 0,
         "estado": "fechada",
@@ -87,8 +88,8 @@ _MOCK_ACOES = [
         "nome": "Segurança nos trabalhos de construção civil",
         "empresa_cliente": "CAMOESAS, LDA", "projeto": "ANIET",
         "consultor_nome": "Etapas Pioneiras, Lda",
-        "formador_nome": "Bruno Costa", "valor_fatura_formador": None,
-        "dimensao": "Pequena", "volume_horas": 24,
+        "formador_nome": "Bruno Costa", "valor_fatura_formador": None,  # ainda não faturou
+        "dimensao": "Pequena", "volume_horas": 25,
         "formandos_certificados": 16, "formandos_desf": 0, "formandos_nao_desf": 0,
         "estado": "fechada",
     },
@@ -97,7 +98,7 @@ _MOCK_ACOES = [
         "nome": "Gestão de emergências e primeiros socorros",
         "empresa_cliente": "Fenabel, S.A", "projeto": "MENTORES",
         "consultor_nome": "Winet Consulting, Lda",
-        "formador_nome": "Fátima Sorte", "valor_fatura_formador": 1646.40,
+        "formador_nome": "Fátima Sorte", "valor_fatura_formador": 400.0,  # 16h * 25€
         "dimensao": "Média", "volume_horas": 16,
         "formandos_certificados": 14, "formandos_desf": 8, "formandos_nao_desf": 6,
         "estado": "fechada",
@@ -107,8 +108,8 @@ _MOCK_ACOES = [
         "nome": "Op. Seg. Equip. Movimentação Cargas 1",
         "empresa_cliente": "J.A. Veiga de Macedo", "projeto": "PRODUTECH",
         "consultor_nome": "Etapas Pioneiras, Lda",
-        "formador_nome": "Ivo Daniel Monteiro", "valor_fatura_formador": 3200.0,
-        "dimensao": "Pequena", "volume_horas": 30,
+        "formador_nome": "Ivo Daniel Monteiro", "valor_fatura_formador": 625.0,  # 25h * 25€
+        "dimensao": "Pequena", "volume_horas": 25,
         "formandos_certificados": 16, "formandos_desf": 0, "formandos_nao_desf": 0,
         "estado": "fechada",
     },
@@ -117,8 +118,8 @@ _MOCK_ACOES = [
         "nome": "Atendimento e experiência do cliente",
         "empresa_cliente": "Comércio Lisboa, Lda", "projeto": "APIMA",
         "consultor_nome": "FormaConsult, Unip. Lda",
-        "formador_nome": "Sofia Rodrigues", "valor_fatura_formador": 1375.0,
-        "dimensao": "Pequena", "volume_horas": 20,
+        "formador_nome": "Sofia Rodrigues", "valor_fatura_formador": 500.0,  # 25h * 20€ (<13)
+        "dimensao": "Pequena", "volume_horas": 25,
         "formandos_certificados": 11, "formandos_desf": 0, "formandos_nao_desf": 0,
         "estado": "a_decorrer",
     },
