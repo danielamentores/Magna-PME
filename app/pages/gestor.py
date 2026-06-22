@@ -3,7 +3,7 @@ import streamlit as st
 
 from app import db_coordenador as db
 from app.pages import gestor_controlo
-
+from app.pages import gestor_reembolsos
 
 def render(user: dict):
     st.header(f"Bem-vinda, {user['nome']}")
@@ -14,7 +14,7 @@ def render(user: dict):
     with tab2:
         _render_confirmacao_faturacao()
     with tab3:
-        st.info("🚧 Em construcao — selecionar acoes para reembolso.")
+        gestor_reembolsos.render()
 
 
 def _render_confirmacao_faturacao():
