@@ -275,19 +275,33 @@ def render_acoes(user: dict):
 
         st.html(
             '<div style="background:#fff;border:1px solid #E4E7EF;border-radius:12px;margin-bottom:12px;overflow:hidden">' +
-            '<div style="padding:14px 18px 12px;border-bottom:1px solid #F0F2F5;display:flex;align-items:flex-start;justify-content:space-between">' +
-            f'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-weight:700;font-size:15px;color:#1A1F2E">{codigo}</span>{ptag(proj)}&nbsp;{bdg(est)}</div><div style="font-size:13px;color:#4B5263">{nome[:65]}</div><div style="font-size:12px;color:#8B94A3;margin-top:2px">{empresa} · {dim or "—"}</div></div>' +
-            f'<div style="text-align:right;flex-shrink:0;margin-left:16px"><div style="font-size:12px;color:#8B94A3">{fc} formandos certificados</div><div style="font-size:12px;color:#2A7A8C;font-weight:600;margin-top:2px">Vol. cert.: {vol_display}</div></div>' +
+
+            # ── Cabeçalho ──
+            '<div style="padding:12px 18px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between">' +
+            f'<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="font-weight:700;font-size:14px;color:#1A1F2E">{codigo}</span>{ptag(proj)}{bdg(est)}</div><div style="font-size:12px;color:#4B5263">{nome[:65]} · <span style="color:#8B94A3">{empresa}</span></div></div>' +
+            f'<div style="text-align:right;font-size:12px;color:#8B94A3;flex-shrink:0;margin-left:16px"><span style="color:#2A7A8C;font-weight:600">{vol_display}</span> · {fc} form. · {dim or "—"}</div>' +
             '</div>' +
-            '<div style="padding:10px 18px;background:#F7F8FC;border-bottom:1px solid #F0F2F5;display:flex;gap:32px">' +
-            f'<div><span style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Consultor</span><div style="font-size:13px;color:#1A1F2E;margin-top:1px">{consultor}</div><div style="font-size:15px;font-weight:700;color:#2563EB;margin-top:2px">{_ed(v_cons)}</div></div>' +
-            '<div style="width:1px;background:#E4E7EF;flex-shrink:0"></div>' +
-            f'<div><span style="font-size:11px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Formador</span><div style="font-size:13px;color:#1A1F2E;margin-top:1px">{formador}</div><div style="font-size:15px;font-weight:700;color:{form_cor};margin-top:2px">{form_label}</div></div>' +
-            '</div>' +
-            '<div style="padding:12px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">' +
-            f'<div style="background:#F0FDF4;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#16A34A;font-weight:600;text-transform:uppercase;letter-spacing:.05em">M&T recebe</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE2030</div><div style="font-size:17px;font-weight:700;color:#16A34A;margin-top:4px">{_ed(v_comp) if v_comp else "—"}</div></div>' +
-            f'<div style="background:#FFFBEB;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#D97706;font-weight:600;text-transform:uppercase;letter-spacing:.05em">M&T fatura</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">Empresa</div><div style="font-size:17px;font-weight:700;color:#D97706;margin-top:4px">{_ed(v_fat_e) if v_fat_e else "—"}</div></div>' +
-            f'<div style="background:#F7F8FC;border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Empresa recebe</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE2030</div><div style="font-size:17px;font-weight:700;color:#6B7280;margin-top:4px">{_ed(v_emp_r) if v_emp_r else "—"}</div></div>' +
-            f'<div style="background:{mg_bg};border-radius:8px;padding:10px 14px"><div style="font-size:11px;color:{m_cor};font-weight:600;text-transform:uppercase;letter-spacing:.05em">Margem M&T</div><div style="font-size:11px;color:#8B94A3;margin-top:1px">COMPETE+Empresa−(cons.+form.)</div><div style="font-size:17px;font-weight:700;color:{m_cor};margin-top:4px">{_ed(margem) if v_comp else "—"}</div></div>' +
+
+            # ── Grid 6 colunas: consultor | formador | M&T recebe | M&T fatura | Empresa recebe | Margem ──
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1.2fr;border-top:1px solid #F0F2F5">' +
+
+            # Consultor
+            f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5"><div style="font-size:10px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Consultor</div><div style="font-size:12px;color:#4B5263;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{consultor}</div><div style="font-size:15px;font-weight:700;color:#2563EB">{_ed(v_cons)}</div></div>' +
+
+            # Formador
+            f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5"><div style="font-size:10px;color:#8B94A3;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Formador</div><div style="font-size:12px;color:#4B5263;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{formador}</div><div style="font-size:15px;font-weight:700;color:{form_cor}">{form_label}</div></div>' +
+
+            # M&T recebe
+            f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5;background:#FAFFFE"><div style="font-size:10px;color:#16A34A;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">M&T recebe</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE2030</div><div style="font-size:15px;font-weight:700;color:#16A34A">{_ed(v_comp) if v_comp else "—"}</div></div>' +
+
+            # M&T fatura
+            f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5;background:#FFFDF5"><div style="font-size:10px;color:#D97706;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">M&T fatura</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">Empresa</div><div style="font-size:15px;font-weight:700;color:#D97706">{_ed(v_fat_e) if v_fat_e else "—"}</div></div>' +
+
+            # Empresa recebe
+            f'<div style="padding:12px 14px;border-right:1px solid #F0F2F5"><div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Empresa recebe</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE2030</div><div style="font-size:15px;font-weight:700;color:#6B7280">{_ed(v_emp_r) if v_emp_r else "—"}</div></div>' +
+
+            # Margem
+            f'<div style="padding:12px 14px;background:{mg_bg}"><div style="font-size:10px;color:{m_cor};font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Margem M&T</div><div style="font-size:11px;color:#8B94A3;margin-bottom:4px">COMPETE+Emp.−(cons.+form.)</div><div style="font-size:16px;font-weight:700;color:{m_cor}">{_ed(margem) if v_comp else "—"}</div></div>' +
+
             '</div></div>'
         )
