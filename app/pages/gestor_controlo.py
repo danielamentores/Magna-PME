@@ -1,10 +1,12 @@
 """Separador 'Controlo de Execução' do perfil do gestor.
 
 Fase de demonstração: a % de execução de cada projeto é fixada em "pct_demo".
-Cada consultor mostra uma % à volta desse valor (variação realista) e as suas
-ações de formação ao expandir. Volume = horas × formandos que terminaram.
+Ao abrir um consultor vê-se a tabela das suas ações (fechadas / em execução),
+com exportação para Excel. Volume = horas × formandos que terminaram.
 """
+import io
 import streamlit as st
+import pandas as pd
 
 # ---------------------------------------------------------------------------
 # PROJETOS (volume atribuído real; % de execução ajustada para a demo)
@@ -94,6 +96,12 @@ _TEMAS = [
     "Atendimento e Vendas",
 ]
 
+_EMPRESAS = [
+    "Madeicarpin, Lda", "Florestas do Norte, SA", "Construções Beira",
+    "Mobiliário Sul", "Tecno Verde", "AgroServiços, Lda",
+    "Indústrias Reunidas", "Habitat Pro", "Serralharia Central",
+]
+
 
 # ---------------------------------------------------------------------------
 # CÁLCULOS / EXEMPLOS
@@ -103,48 +111,70 @@ def _fmt(n):
 
 
 def _consultor_pct(proj, c):
-    """% de execução do consultor: à volta da % do projeto, com variação."""
     pct_demo = proj.get("pct_demo")
     if pct_demo is None or not c.get("volume_atribuido"):
         return None
     if len(proj["consultores"]) == 1:
         return float(pct_demo)
     base = sum(ord(ch) for ch in c["nome"])
-    pc = pct_demo + ((base % 31) - 15)  # ±15
-    return float(max(4, min(96, pc)))
+    return float(max(4, min(96, pct_demo + ((base % 31) - 15))))
 
 
 def _consultor_feito(proj, c):
     va = c.get("volume_atribuido") or 0
     pc = _consultor_pct(proj, c)
-    if pc is None:
-        return 0
-    return round(pc / 100 * va)
+    return round(pc / 100 * va) if pc is not None else 0
 
 
+def _gerar_acoes(nome, vol_feito):
+    """Ações de exemplo do consultor: várias fechadas (somam ~volume feito)
+    e algumas em execução. Fase visual."""
+    base = sum(ord(ch) for ch in nome)
+    horas_opts = [16, 20, 24, 25, 30]
+    acoes = []
+
+    if vol_feito > 0:
+        n = max(3, min(15, int(vol_feito // 400)))
+        restante = vol_feito
+        for i in range(n):
+            h = horas_opts[(base + i) % len(horas_opts)]
+            vol_alvo = restante if i == n - 1 else round(vol_feito / n)
+            f = max(1, round(vol_alvo / h))
+            acoes.append({
+                "Ação": f"{_TEMAS[(base + i) % len(_TEMAS)]} (nível {i % 3 + 1})",
+                "Empresa": _EMPRESAS[(base + i) % len(_EMPRESAS)],
+                "Horas": h, "Formandos": f, "Volume": h * f, "Estado": "Fechada",
+            })
+            restante -= h * f
+
+    for j in range(3 + base % 3):
+        h = horas_opts[(base + j + 2) % len(horas_opts)]
+        f = (base + j) % 12  # formandos já terminados (parcial)
+        acoes.append({
+            "Ação": f"{_TEMAS[(base + j + 1) % len(_TEMAS)]} (nível {j % 3 + 1})",
+            "Empresa": _EMPRESAS[(base + j + 3) % len(_EMPRESAS)],
+            "Horas": h, "Formandos": f, "Volume": h * f, "Estado": "Em execução",
+        })
+    return acoes
+
+
+def _excel_bytes(df):
+    """Converte o DataFrame para bytes de Excel (.xlsx)."""
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as w:
+        df.to_excel(w, index=False, sheet_name="Ações")
+    return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# CÁLCULO DOS TOTAIS
+# ---------------------------------------------------------------------------
 def _totais_projeto(proj):
     vol_atrib = sum((c.get("volume_atribuido") or 0) for c in proj["consultores"])
     n_acoes = sum((c.get("n_acoes") or 0) for c in proj["consultores"])
     pct = float(proj.get("pct_demo") or 0)
     vol_feito = round(pct / 100 * vol_atrib)
     return vol_feito, vol_atrib, pct, n_acoes
-
-
-def _acoes_exemplo(nome, V):
-    """Duas ações de exemplo que repartem o volume feito do consultor."""
-    if V <= 0:
-        return []
-    base = sum(ord(ch) for ch in nome)
-    i1 = base % len(_TEMAS)
-    i2 = (base // 5 + 2) % len(_TEMAS)
-    if i2 == i1:
-        i2 = (i1 + 1) % len(_TEMAS)
-    v1 = round(V * 0.6)
-    v2 = V - v1
-    return [
-        {"nome": _TEMAS[i1], "horas": 25, "formandos": max(1, round(v1 / 25))},
-        {"nome": _TEMAS[i2], "horas": 20, "formandos": max(1, round(v2 / 20))},
-    ]
 
 
 # ---------------------------------------------------------------------------
@@ -190,13 +220,13 @@ def _render_clusters():
                     st.rerun()
 
 
-def _render_detalhe(nome):
-    proj = PROJETOS_CLUSTERS[nome]
+def _render_detalhe(proj_nome):
+    proj = PROJETOS_CLUSTERS[proj_nome]
     if st.button("← Voltar aos projetos", key="ce_voltar"):
         st.session_state.pop("ce_proj_sel", None)
         st.rerun()
 
-    st.markdown(f"### {nome}")
+    st.markdown(f"### {proj_nome}")
     vol_feito, vol_atrib, pct, n_acoes = _totais_projeto(proj)
     dias = proj.get("dias_restantes")
     c1, c2, c3 = st.columns(3)
@@ -211,22 +241,41 @@ def _render_detalhe(nome):
         pc = _consultor_pct(proj, c)
         vc = _consultor_feito(proj, c)
         va = c.get("volume_atribuido")
-        if pc is not None:
-            label = f"{c['nome']}  —  {pc:.0f}%  ({_fmt(vc)} / {_fmt(va)})"
-        else:
-            label = f"{c['nome']}  —  volume feito {_fmt(vc)}"
+        label = (f"{c['nome']}  —  {pc:.0f}%  ({_fmt(vc)} / {_fmt(va)})"
+                 if pc is not None else f"{c['nome']}  —  volume feito {_fmt(vc)}")
 
         with st.expander(label):
             if pc is not None:
                 st.progress(min(pc / 100, 1.0))
-                st.caption(f"{_fmt(vc)} de {_fmt(va)} do volume atribuído")
-            st.markdown("**Ações de formação**")
-            acoes = _acoes_exemplo(c["nome"], vc)
-            if not acoes:
-                st.caption("Sem ações terminadas ainda.")
+
+            acoes = _gerar_acoes(c["nome"], vc)
+            df = pd.DataFrame(acoes)
+            chave = f"{proj_nome}_{c['nome']}"
+
+            n_fech = int((df["Estado"] == "Fechada").sum()) if not df.empty else 0
+            n_exec = int((df["Estado"] == "Em execução").sum()) if not df.empty else 0
+
+            filtro = st.radio(
+                "Estado",
+                ["Todas", f"Fechadas ({n_fech})", f"Em execução ({n_exec})"],
+                horizontal=True,
+                label_visibility="collapsed",
+                key=f"acfil_{chave}",
+            )
+            df_v = df
+            if filtro.startswith("Fechadas"):
+                df_v = df[df["Estado"] == "Fechada"]
+            elif filtro.startswith("Em execução"):
+                df_v = df[df["Estado"] == "Em execução"]
+
+            if df_v.empty:
+                st.caption("Sem ações para mostrar.")
             else:
-                for a in acoes:
-                    vol = a["horas"] * a["formandos"]
-                    st.caption(
-                        f"• {a['nome']} — {a['horas']}h × {a['formandos']} formandos = {vol} de volume"
-                    )
+                st.dataframe(df_v, hide_index=True, use_container_width=True)
+                st.download_button(
+                    "⬇️ Exportar para Excel",
+                    data=_excel_bytes(df_v),
+                    file_name=f"acoes_{c['nome'].replace(' ', '_')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"acxls_{chave}",
+                )
