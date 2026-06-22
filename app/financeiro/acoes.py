@@ -222,11 +222,11 @@ def render_acoes(user: dict):
 
     st.html(
         '<div class="fin-kpi-row">'
-        + kpi_h("💶 M&T recebe",        _ed(total_compete),   f"{len(acoes)} ações", "g")
-        + kpi_h("🏢 M&T fatura empresa",_ed(total_fat_emp),   "a cobrar",            "a")
-        + kpi_h("🤝 Consultores",       _ed(total_consultor), "NH total",            "b")
-        + kpi_h("👤 Formadores",        _ed(total_formador),  "faturas",             "b")
-        + kpi_h("📊 Margem bruta M&T",  _ed(total_margem),
+        + kpi_h("💶 M&T Recebe do COMPETE2030",        _ed(total_compete),   f"{len(acoes)} ações", "g")
+        + kpi_h("🏢 M&T Fatura às Empresas",_ed(total_fat_emp),   "a cobrar",            "a")
+        + kpi_h("🤝 Custo Consultores",       _ed(total_consultor), "NH total",            "b")
+        + kpi_h("👤 Custo Formadores",        _ed(total_formador),  "faturas",             "b")
+        + kpi_h("📊 Margem Bruta M&T",  _ed(total_margem),
                 "COMPETE+Empresa − (cons.+form.)",
                 "g" if total_margem >= 0 else "r")
         + '</div>'
