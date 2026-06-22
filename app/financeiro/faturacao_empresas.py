@@ -384,53 +384,60 @@ def render_faturacao_empresas(user: dict):
             d_pag   = str(row.get("data_pagamento") or "—")[:10]
             val_rec = row.get("valor_recebido")
 
-            with st.container(border=True):
-                col_info, col_val, col_acao = st.columns([5, 2, 3])
+            # Card completo — info + valor + ação na mesma linha
+            borda_est = {"por_faturar":"#9CA3AF","fatura_emitida":"#2563EB","pago":"#16A34A"}.get(estado,"#E4E7EF")
+            fatura_info = f'Fatura: <strong>{n_fat}</strong> · {d_fat}' if n_fat != "—" else ""
+            pago_info   = f'Pago em: <strong>{d_pag}</strong> · {_e(val_rec)}' if d_pag != "—" else ""
 
-                with col_info:
-                    st.markdown(
-                        f'<div style="padding:4px 0">'
-                        f'<div style="font-weight:700;font-size:14px">{empresa}</div>'
-                        f'<div style="font-size:12px;color:#8B94A3;margin-top:2px">'
-                        f'{ptag(proj)}&nbsp;·&nbsp;{codigo}&nbsp;·&nbsp;{dim}'
-                        f'</div>'
-                        f'{"<div style=\\'font-size:12px;color:#8B94A3\\'>Fatura: " + n_fat + " · " + d_fat + "</div>" if n_fat != "—" else ""}'
-                        f'{"<div style=\\'font-size:12px;color:#16A34A\\'>Pago em: " + d_pag + " · " + _e(val_rec) + "</div>" if d_pag != "—" else ""}'
-                        f'</div>', unsafe_allow_html=True
-                    )
+            st.html(
+                f'<div style="background:#fff;border:1px solid #E4E7EF;border-left:4px solid {borda_est};'
+                f'border-radius:10px;padding:16px 20px;margin-bottom:8px;display:flex;align-items:center;gap:16px">'
+                f'<div style="flex:1">'
+                f'<div style="font-weight:700;font-size:16px;color:#1A1F2E;margin-bottom:4px">{empresa}</div>'
+                f'<div style="margin-bottom:4px">{ptag(proj)}&nbsp;&nbsp;<span style="font-size:12px;color:#6B7280">{codigo} · {dim}</span></div>'
+                f'{f'<div style="font-size:13px;color:#4B5263;margin-top:2px">{fatura_info}</div>' if fatura_info else ""}'
+                f'{f'<div style="font-size:13px;color:#16A34A;font-weight:500;margin-top:2px">{pago_info}</div>' if pago_info else ""}'
+                f'</div>'
+                f'<div style="text-align:right;flex-shrink:0;min-width:110px">'
+                f'<div style="font-weight:700;font-size:18px;color:#1A1F2E">{_e(valor)}</div>'
+                f'<div style="margin-top:4px">{bdg(estado)}</div>'
+                f'</div>'
+                f'</div>'
+            )
 
-                with col_val:
-                    st.markdown(
-                        f'<div style="text-align:right;padding-top:6px">'
-                        f'<div style="font-weight:700;font-size:18px;color:#1A1F2E;margin-bottom:6px">{_e(valor)}</div>'
-                        f'<div>{bdg(estado)}</div>'
-                        f'</div>', unsafe_allow_html=True
-                    )
-
-                with col_acao:
-                    if estado == "por_faturar":
-                        n_fat_inp = st.text_input("Nº Fatura emitida", key=f"nf_{fe_id}", placeholder="FT2026/E...")
-                        d_fat_inp = st.date_input("Data fatura", key=f"df_{fe_id}", value=None, format="DD/MM/YYYY")
-                        if st.button("📄 Marcar fatura emitida", key=f"fi_{fe_id}", use_container_width=True):
-                            if n_fat_inp:
-                                upd = {"estado":"fatura_emitida","numero_fatura":n_fat_inp,
-                                       "data_fatura":str(d_fat_inp) if d_fat_inp else None}
-                                if _atualizar_fat_empresa(fe_id, upd):
-                                    st.toast(f"Fatura registada para {empresa}!"); st.rerun()
-                            else: st.warning("Introduz o número da fatura.")
-
-                    elif estado == "fatura_emitida":
-                        d_pag_inp  = st.date_input("Data pagamento", key=f"dp_{fe_id}", value=None, format="DD/MM/YYYY")
-                        val_rec_inp = st.number_input("Valor recebido (€)", key=f"vr_{fe_id}", min_value=0.0,
-                                                       value=float(valor), step=0.01, format="%.2f")
-                        if st.button("✅ Marcar como pago", key=f"pg_{fe_id}", use_container_width=True):
-                            upd = {"estado":"pago","data_pagamento":str(d_pag_inp) if d_pag_inp else None,
-                                   "valor_recebido":float(val_rec_inp)}
+            # Ações inline — só aparecem se necessário
+            if estado == "por_faturar":
+                col_nf, col_df, col_btn = st.columns([3, 2, 2])
+                with col_nf:
+                    n_fat_inp = st.text_input("Nº Fatura", key=f"nf_{fe_id}", placeholder="FT2026/E...", label_visibility="visible")
+                with col_df:
+                    d_fat_inp = st.date_input("Data", key=f"df_{fe_id}", value=None, format="DD/MM/YYYY")
+                with col_btn:
+                    st.markdown("<div style='margin-top:24px'>", unsafe_allow_html=True)
+                    if st.button("📄 Registar fatura", key=f"fi_{fe_id}", use_container_width=True, type="primary"):
+                        if n_fat_inp:
+                            upd = {"estado":"fatura_emitida","numero_fatura":n_fat_inp,
+                                   "data_fatura":str(d_fat_inp) if d_fat_inp else None}
                             if _atualizar_fat_empresa(fe_id, upd):
-                                st.toast(f"Pagamento registado para {empresa}!"); st.rerun()
+                                st.toast(f"Fatura registada para {empresa}!"); st.rerun()
+                        else: st.warning("Introduz o número da fatura.")
+                    st.markdown("</div>", unsafe_allow_html=True)
 
-                    elif estado == "pago":
-                        st.markdown("<div style='padding-top:12px;text-align:center;font-size:13px;color:#16A34A'>✅ Liquidado</div>", unsafe_allow_html=True)
+            elif estado == "fatura_emitida":
+                col_dp, col_vr, col_btn2 = st.columns([2, 3, 2])
+                with col_dp:
+                    d_pag_inp = st.date_input("Data pagamento", key=f"dp_{fe_id}", value=None, format="DD/MM/YYYY")
+                with col_vr:
+                    val_rec_inp = st.number_input("Valor recebido (€)", key=f"vr_{fe_id}", min_value=0.0,
+                                                   value=float(valor), step=0.01, format="%.2f")
+                with col_btn2:
+                    st.markdown("<div style='margin-top:24px'>", unsafe_allow_html=True)
+                    if st.button("✅ Marcar pago", key=f"pg_{fe_id}", use_container_width=True, type="primary"):
+                        upd = {"estado":"pago","data_pagamento":str(d_pag_inp) if d_pag_inp else None,
+                               "valor_recebido":float(val_rec_inp)}
+                        if _atualizar_fat_empresa(fe_id, upd):
+                            st.toast(f"Pagamento registado para {empresa}!"); st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
     st.html(_divider())
 
