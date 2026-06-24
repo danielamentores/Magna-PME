@@ -1,17 +1,17 @@
 # Magna-PME
 
-Agente de IA para gestão administrativa e financeira de ações de formação.
+APP para gestão administrativa e financeira de ações de formação.
 
 Substitui o fluxo atual de Excel + Forms + Drive por uma aplicação centralizada
 que se integra com a Magna (plataforma de gestão de formação).
 
 ## 🎯 O que faz
 
-- **Formadores** submetem faturas → app lê com IA e valida contra a Magna
-- **Coordenadores** veem o estado das suas ações e formadores
+- **Formadores** submetem faturas → app lê e valida contra a Magna
+- **Coordenadores** veem o estado das suas ações e formadores .
 - **Gestor de projeto** seleciona ações para faturação/reembolso
 - **Financeiro** aprova pagamentos e regista comprovativos
-- **Agente IA** envia alertas automáticos (10 dias, 30 dias) e marca eventos no calendário
+- **alertas de faturas** envia alertas automáticos (10 dias, 30 dias) e marca eventos no calendário e na Formação-Ação quando a execução está a 80 % será faturado os 10 % á empresa.
 
 ## 🏗️ Stack técnica
 
@@ -20,7 +20,7 @@ que se integra com a Magna (plataforma de gestão de formação).
 | Interface | Streamlit |
 | Base de dados | Supabase (PostgreSQL) |
 | Autenticação | Google OAuth 2.0 |
-| IA | Gemini 2.5 Flash |
+| ler faturas com código python |
 | Email | Gmail API |
 | Calendário | Google Calendar API |
 | Armazenamento | Google Drive API |
@@ -39,7 +39,6 @@ gestform/
 │   ├── permissions.py    # Quem vê o quê
 │   └── config.py         # Configuração
 ├── integrations/
-│   ├── gemini.py         # Leitura de faturas com IA
 │   ├── gmail.py          # Enviar/receber emails
 │   ├── calendar.py       # Alertas no calendário
 │   ├── drive.py          # Arquivo de ficheiros
@@ -58,7 +57,6 @@ gestform/
 
 ## 🚀 Setup inicial
 
-Segue os guias por esta ordem:
 
 1. [`docs/01_google_cloud_setup.md`](docs/01_google_cloud_setup.md) — Criar projeto + APIs + OAuth
 2. [`docs/02_supabase_setup.md`](docs/02_supabase_setup.md) — Criar BD e tabelas
